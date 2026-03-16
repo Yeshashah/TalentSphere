@@ -24,7 +24,7 @@ import Messages from './pages/Messages';
 import AdminDashboard from './pages/AdminDashboard';
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
@@ -45,7 +45,7 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
-      <Route element={<AppLayout user={user} />}>
+      <Route element={<AppLayout />}>
         <Route path="/" element={<Navigate to="/Home" replace />} />
         <Route path="/Home" element={<Home />} />
         <Route path="/RoleSelect" element={<RoleSelect />} />

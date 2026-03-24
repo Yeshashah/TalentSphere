@@ -24,23 +24,23 @@ export default function CandidateCard({ candidate }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors truncate">
-                {candidate.full_name}
+                {candidate.full_name || candidate.name}
               </h3>
               {candidate.open_to_work && (
                 <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">Open to work</Badge>
               )}
             </div>
-            <p className="text-sm text-slate-500 mt-0.5">{candidate.job_title}</p>
+            <p className="text-sm text-slate-500 mt-0.5">{candidate.job_title || candidate.headline}</p>
 
             <div className="flex flex-wrap items-center gap-3 mt-2">
               {candidate.location && (
                 <span className="inline-flex items-center gap-1 text-xs text-slate-500">
-                  <MapPin className="w-3 h-3" /> {candidate.location}
+                  <MapPin className="w-3 h-3" /> {candidate.location || candidate.region}
                 </span>
               )}
               {candidate.years_of_experience != null && (
                 <span className="inline-flex items-center gap-1 text-xs text-slate-500">
-                  <Briefcase className="w-3 h-3" /> {candidate.years_of_experience} yrs exp
+                  <Briefcase className="w-3 h-3" /> {candidate.years_of_experience || candidate.years_of_experience_raw} yrs exp
                 </span>
               )}
               {candidate.availability && (

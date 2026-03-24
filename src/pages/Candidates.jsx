@@ -18,9 +18,7 @@ export default function Candidates() {
     queryFn: () => fetchCrustCandidates(),
   });
 
-  const visible = useMemo(() => {
-    return candidates.filter(c => c.visibility !== 'private');
-  }, [candidates]);
+  const visible = useMemo(() => candidates, [candidates]);
 
   const filtered = useMemo(() => {
     return visible.filter(c => {

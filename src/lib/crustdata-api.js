@@ -28,7 +28,7 @@ const setCached = (data) => {
 
 export const fetchCrustCandidates = async (filters = {}) => {
   const cached = getCached();
-  if (cached) return cached;
+  if (cached && cached.length > 0) return cached;
 
   const requestBody = filters.filters ? filters : {
     limit: 20,

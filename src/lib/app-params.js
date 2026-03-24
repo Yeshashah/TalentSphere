@@ -189,9 +189,7 @@ const getAppParams = () => {
     appId: getAppParamValue(
       "app_id",
       {
-        defaultValue:
-          import.meta.env
-            .VITE_BASE44_APP_ID,
+        defaultValue: `698630e39a66b67bfca27f2e0a1a0a48a41d58a5`,
         ttl: TTL.DEFAULT
       }
     ),

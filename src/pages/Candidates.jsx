@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { base44 } from '@/api/base44Client';
+import { fetchCrustCandidates } from '@/lib/crustdata-api';
 import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -13,9 +13,9 @@ export default function Candidates() {
   const [availability, setAvailability] = useState('all');
   const [experience, setExperience] = useState('all');
 
-  const { data: candidates = [], isLoading } = useQuery({
+  const { data: candidates = [], isLoading, error } = useQuery({
     queryKey: ['candidates-public'],
-    queryFn: () => base44.entities.CandidateProfile.filter({ open_to_work: true }, '-created_date'),
+    queryFn: () => fetchCrustCandidates(),
   });
 
   const visible = useMemo(() => {
@@ -86,6 +86,11 @@ export default function Candidates() {
         <p className="text-sm text-slate-500 mb-4">{filtered.length} candidate{filtered.length !== 1 ? 's' : ''} found</p>
         {isLoading ? (
           <LoadingSpinner />
+        ) : error ? (
+          <div className="text-center py-12 text-red-500">
+            <p className="font-medium">Failed to load candidates</p>
+            <p className="text-sm mt-1">{error.message}</p>
+          </div>
         ) : filtered.length === 0 ? (
           <EmptyState icon={Users} title="No candidates found" description="Try adjusting your search or filters" />
         ) : (

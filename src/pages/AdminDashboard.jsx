@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { fetchCandidate } from '@/api/base44Client';
+import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,40 +14,40 @@ export default function AdminDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => fetchCandidate.auth.me() });
+  const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
 
   const { data: users = [] } = useQuery({
     queryKey: ['admin-users'],
-    queryFn: () => fetchCandidate.entities.User.list('-created_date'),
+    queryFn: () => base44.entities.User.list('-created_date'),
     enabled: user?.role === 'admin',
   });
 
   const { data: candidates = [], isLoading: lc } = useQuery({
     queryKey: ['admin-candidates'],
-    queryFn: () => fetchCandidate.entities.CandidateProfile.list('-created_date'),
+    queryFn: () => base44.entities.CandidateProfile.list('-created_date'),
     enabled: user?.role === 'admin',
   });
 
   const { data: companies = [], isLoading: lco } = useQuery({
     queryKey: ['admin-companies'],
-    queryFn: () => fetchCandidate.entities.CompanyProfile.list('-created_date'),
+    queryFn: () => base44.entities.CompanyProfile.list('-created_date'),
     enabled: user?.role === 'admin',
   });
 
   const { data: jobs = [], isLoading: lj } = useQuery({
     queryKey: ['admin-jobs'],
-    queryFn: () => fetchCandidate.entities.Job.list('-created_date'),
+    queryFn: () => base44.entities.Job.list('-created_date'),
     enabled: user?.role === 'admin',
   });
 
   const { data: applications = [] } = useQuery({
     queryKey: ['admin-applications'],
-    queryFn: () => fetchCandidate.entities.Application.list('-created_date'),
+    queryFn: () => base44.entities.Application.list('-created_date'),
     enabled: user?.role === 'admin',
   });
 
   const deleteJobMutation = useMutation({
-    mutationFn: (id) => fetchCandidate.entities.Job.delete(id),
+    mutationFn: (id) => base44.entities.Job.delete(id),
     onSuccess: () => {
       toast({ title: 'Job deleted' });
       queryClient.invalidateQueries({ queryKey: ['admin-jobs'] });

@@ -26,9 +26,6 @@ export default function CandidateCard({ candidate }) {
               <h3 className="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors truncate">
                 {candidate.full_name || candidate.name}
               </h3>
-              {candidate.open_to_work && (
-                <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">Open to work</Badge>
-              )}
             </div>
             <p className="text-sm text-slate-500 mt-0.5">{candidate.job_title || candidate.headline}</p>
 

@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
       // First, check app public settings (with token if available)
       // This will tell us if auth is required, user not registered, etc.
       const appClient = createAxiosClient({
-        baseURL: `/api/apps/public`,
+        baseURL: `https://api.crustdata.com/screener/persondb/search`,
         headers: {
           'X-App-Id': appParams.appId
         },

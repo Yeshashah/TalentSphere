@@ -1,5 +1,5 @@
 import React from 'react';
-import { base44 } from '@/api/base44Client';
+import { fetchCandidate } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,12 +9,12 @@ import LoadingSpinner from '../components/shared/LoadingSpinner';
 import StatusBadge from '../components/shared/StatusBadge';
 
 export default function CandidateDashboard() {
-  const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
+  const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => fetchCandidate.auth.me() });
 
   const { data: profile, isLoading: loadingProfile } = useQuery({
     queryKey: ['my-candidate-profile', user?.email],
     queryFn: async () => {
-      const p = await base44.entities.CandidateProfile.filter({ user_email: user.email });
+      const p = await fetchCandidate.entities.CandidateProfile.filter({ user_email: user.email });
       return p[0] || null;
     },
     enabled: !!user?.email,
@@ -22,19 +22,19 @@ export default function CandidateDashboard() {
 
   const { data: applications = [] } = useQuery({
     queryKey: ['my-applications', user?.email],
-    queryFn: () => base44.entities.Application.filter({ candidate_email: user.email }, '-created_date'),
+    queryFn: () => fetchCandidate.entities.Application.filter({ candidate_email: user.email }, '-created_date'),
     enabled: !!user?.email,
   });
 
   const { data: savedJobs = [] } = useQuery({
     queryKey: ['my-saved-jobs', user?.email],
-    queryFn: () => base44.entities.SavedItem.filter({ user_email: user.email, item_type: 'job' }),
+    queryFn: () => fetchCandidate.entities.SavedItem.filter({ user_email: user.email, item_type: 'job' }),
     enabled: !!user?.email,
   });
 
   const { data: messages = [] } = useQuery({
     queryKey: ['my-unread', user?.email],
-    queryFn: () => base44.entities.Message.filter({ receiver_email: user.email, read: false }),
+    queryFn: () => fetchCandidate.entities.Message.filter({ receiver_email: user.email, read: false }),
     enabled: !!user?.email,
   });
 

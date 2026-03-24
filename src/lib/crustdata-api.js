@@ -20,9 +20,11 @@ const getCached = () => {
 
 const setCached = (data) => {
   try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ value: data, timestamp: Date.now() }));
+    const payload = JSON.stringify({ value: data, timestamp: Date.now() });
+    localStorage.setItem(CACHE_KEY, payload);
+    console.log('Cache stored:', data.length, 'candidates');
   } catch (e) {
-    console.error('Cache write failed:', e);
+    console.error('Cache write failed:', e.message, 'Storage available:', typeof localStorage !== 'undefined');
   }
 };
 
@@ -60,6 +62,7 @@ export const fetchCrustCandidates = async (filters = {}) => {
     open_to_work: true,
   }));
 
+  console.log('About to cache', candidates.length, 'candidates');
   setCached(candidates);
   return candidates;
 };

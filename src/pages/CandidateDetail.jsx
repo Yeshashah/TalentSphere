@@ -62,10 +62,10 @@ export default function CandidateDetail() {
               </div>
             )}
             <div className="flex-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl font-bold text-slate-900">{candidate.full_name}</h1>
-                {candidate.open_to_work && <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">Open to work</Badge>}
-              </div>
+              // <div className="flex items-center gap-2 flex-wrap">
+              //   <h1 className="text-2xl font-bold text-slate-900">{candidate.full_name}</h1>
+              //   {candidate.open_to_work && <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">Open to work</Badge>}
+              // </div>
               <p className="text-lg text-slate-500 mt-1">{candidate.job_title}</p>
               <div className="flex flex-wrap gap-3 mt-3">
                 {candidate.location && <span className="inline-flex items-center gap-1 text-sm text-slate-500"><MapPin className="w-4 h-4" /> {candidate.location}</span>}

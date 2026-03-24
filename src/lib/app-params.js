@@ -10,7 +10,7 @@ const storage = windowObj.localStorage;
  * TTL configuration (in milliseconds)
  */
 const TTL = {
-  TOKEN: 60 * 60 * 1000, // 1 hour
+  TOKEN: `698630e39a66b67bfca27f2e0a1a0a48a41d58a5`, // 1 hour
   DEFAULT: 24 * 60 * 60 * 1000 // 24 hours
 };
 

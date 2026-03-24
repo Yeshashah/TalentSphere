@@ -1,7 +1,7 @@
+import { base44 } from '@/api/base44Client';
+
 const CACHE_KEY = 'crustdata_candidates';
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
-const API_URL = 'https://api.crustdata.com/screener/persondb/search';
-const BEARER_TOKEN = '698630e39a66b67bfca27f2e0a1a0a48a41d58a5';
 
 const getCached = () => {
   try {
@@ -30,34 +30,21 @@ export const fetchCrustCandidates = async (filters = {}) => {
   const cached = getCached();
   if (cached) return cached;
 
-  const body = {
+  const requestBody = filters.filters ? filters : {
     limit: 20,
     filters: {
       op: 'and',
       conditions: [
-        { column: 'region', type: '=', value: 'India' },
-        ...( filters.conditions || [])
+        { column: 'region', type: '=', value: 'India' }
       ]
-    },
-    ...filters
+    }
   };
 
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${BEARER_TOKEN}`
-    },
-    body: JSON.stringify(body)
-  });
+  const response = await base44.functions.invoke('crustdataProxy', requestBody);
+  const json = response.data;
 
-  if (!response.ok) {
-    throw new Error(`CrustData API error: ${response.status} ${response.statusText}`);
-  }
-
-  const json = await response.json();
-  // API returns { data: [...] } or directly an array
-  const raw = Array.isArray(json) ? json : (json.data || json.persons || json.results || []);
+  const raw = Array.isArray(json) ? json : (json.profiles || json.data || json.persons || json.results || []);
+  console.log('CrustData raw count:', raw.length, 'sample:', raw[0]);
 
   // Normalize to match CandidateCard expectations
   const candidates = raw.map(p => ({

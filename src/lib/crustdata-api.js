@@ -23,7 +23,7 @@ export const fetchCrustCandidates = async (filters = {}) => {
     full_name: p.name,
     job_title: p.headline,
     location: p.region,
-    years_of_experience: p.years_of_experience ?? p.years_of_experience_raw,
+    years_of_experience: p.years_of_experience ? Number(p.years_of_experience) : null,
     skills: Array.isArray(p.skills) ? p.skills : [],
     avatar_url: p.profile_picture_url,
     linkedin: p.linkedin_profile_url,

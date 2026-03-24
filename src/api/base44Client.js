@@ -1,42 +1,13 @@
-import {
-  getWithTTL,
-  setWithTTL,
-  TTL
-} from "../lib/utils";
+import { createClient } from '@base44/sdk';
+import { appParams } from '@/lib/app-params';
 
-const CACHE_KEY =
-  "crust_candidates";
+const { appId, token, functionsVersion, appBaseUrl } = appParams;
 
-export const fetchCandidates =
-  async () => {
-
-  const cached =
-    getWithTTL(CACHE_KEY);
-
-  if (cached) {
-    return cached;
-  }
-
-  const response =
-    await fetch(
-      "https://api.crustdata.com/screener/persondb/search",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type":
-            "application/json"
-        }
-      }
-    );
-
-  const data =
-    await response.json();
-
-  setWithTTL(
-    CACHE_KEY,
-    data,
-    TTL.CANDIDATES
-  );
-
-  return data;
-};
+export const base44 = createClient({
+  appId,
+  token,
+  functionsVersion,
+  serverUrl: '',
+  requiresAuth: false,
+  appBaseUrl
+});

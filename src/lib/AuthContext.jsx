@@ -87,11 +87,11 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-      console.log("base44: ", base44);
   const checkUserAuth = async () => {
     try {
       // Now check if the user is authenticated
       setIsLoadingAuth(true);
+      console.log("base44: ", base44?.auth?.me?.());
       const currentUser = await base44?.auth?.me?.();
       // console.log("auth:", base44Client?.auth);
       setUser(currentUser);

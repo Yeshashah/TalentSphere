@@ -7,7 +7,7 @@ import {
 const CACHE_KEY =
   "crust_candidates";
 
-export const base44 =
+export const fetchCandidate =
   async () => {
 
   const cached =

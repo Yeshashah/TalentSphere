@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
@@ -8,39 +8,61 @@ import { Button } from '@/components/ui/button';
 import CandidateCard from '../components/candidates/CandidateCard';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
 import EmptyState from '../components/shared/EmptyState';
+import CandidateFilters from '../components/candidates/CandidateFilters';
 
 export default function Candidates() {
-  const [search, setSearch] = useState('');
-  const [availability, setAvailability] = useState('all');
-  const [experience, setExperience] = useState('all');
+  const [filters, setFilters] = useState({
+    search: '',
+    titles: [],
+    locations: [],
+    industries: [],
+    skills: [],
+    experience: [],
+  });
   const [page, setPage] = useState(0);
   const pageSize = 12;
 
   const { data: result = { candidates: [], total: 0 }, isLoading, error } = useQuery({
-    queryKey: ['candidates-db', search, availability, experience, page],
+    queryKey: ['candidates-db', filters, page],
     queryFn: async () => {
       const query = {};
 
-      if (search) {
-        const q = search.toLowerCase();
+      if (filters.search) {
         query.$or = [
-          { full_name: { $regex: search, $options: 'i' } },
-          { job_title: { $regex: search, $options: 'i' } },
-          { location: { $regex: search, $options: 'i' } },
-          { industry: { $regex: search, $options: 'i' } },
-          { skills: { $in: [search] } }
+          { full_name: { $regex: filters.search, $options: 'i' } },
+          { job_title: { $regex: filters.search, $options: 'i' } },
+          { location: { $regex: filters.search, $options: 'i' } },
+          { industry: { $regex: filters.search, $options: 'i' } },
+          { skills: { $in: [filters.search] } }
         ];
       }
 
-      if (availability !== 'all') {
-        query.availability = availability;
+      if (filters.titles.length > 0) {
+        query.job_title = { $in: filters.titles };
       }
 
-      if (experience !== 'all') {
-        if (experience === '0-2') query.years_of_experience = { $lte: 2 };
-        else if (experience === '3-5') query.years_of_experience = { $gte: 3, $lte: 5 };
-        else if (experience === '6-10') query.years_of_experience = { $gte: 6, $lte: 10 };
-        else if (experience === '10+') query.years_of_experience = { $gte: 10 };
+      if (filters.locations.length > 0) {
+        query.location = { $in: filters.locations };
+      }
+
+      if (filters.industries.length > 0) {
+        query.industry = { $in: filters.industries };
+      }
+
+      if (filters.skills.length > 0) {
+        query.skills = { $in: filters.skills };
+      }
+
+      if (filters.experience.length > 0) {
+        const expRanges = filters.experience.map(exp => {
+          if (exp === '0-2 years') return { years_of_experience: { $lte: 2 } };
+          if (exp === '3-5 years') return { years_of_experience: { $gte: 3, $lte: 5 } };
+          if (exp === '6-10 years') return { years_of_experience: { $gte: 6, $lte: 10 } };
+          if (exp === '10+ years') return { years_of_experience: { $gte: 10 } };
+        }).filter(Boolean);
+        if (expRanges.length > 0) {
+          query.$or = query.$or ? [...query.$or, ...expRanges] : expRanges;
+        }
       }
 
       const candidates = await base44.entities.CandidateProfile.filter(query, '-created_date', pageSize, page * pageSize);
@@ -56,51 +78,11 @@ export default function Candidates() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
           <h1 className="text-3xl font-bold text-slate-900">Talent Marketplace</h1>
           <p className="text-slate-500 mt-1">Discover exceptional candidates</p>
-
-          <div className="flex flex-col sm:flex-row gap-3 mt-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input
-                placeholder="Search by name, title, skills, location..."
-                className="pl-10 h-11 rounded-xl"
-                value={search}
-                onChange={e => {
-                  setSearch(e.target.value);
-                  setPage(0);
-                }}
-              />
-            </div>
-            <Select value={availability} onValueChange={(val) => {
-              setAvailability(val);
+          <div className="mt-6">
+            <CandidateFilters onFilterChange={(newFilters) => {
+              setFilters(newFilters);
               setPage(0);
-            }}>
-              <SelectTrigger className="w-full sm:w-44 h-11 rounded-xl">
-                <SelectValue placeholder="Availability" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Availability</SelectItem>
-                <SelectItem value="immediate">Immediate</SelectItem>
-                <SelectItem value="2_weeks">2 weeks</SelectItem>
-                <SelectItem value="1_month">1 month</SelectItem>
-                <SelectItem value="2_months">2 months</SelectItem>
-                <SelectItem value="3_months_plus">3+ months</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={experience} onValueChange={(val) => {
-              setExperience(val);
-              setPage(0);
-            }}>
-              <SelectTrigger className="w-full sm:w-44 h-11 rounded-xl">
-                <SelectValue placeholder="Experience" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Experience</SelectItem>
-                <SelectItem value="0-2">0-2 years</SelectItem>
-                <SelectItem value="3-5">3-5 years</SelectItem>
-                <SelectItem value="6-10">6-10 years</SelectItem>
-                <SelectItem value="10+">10+ years</SelectItem>
-              </SelectContent>
-            </Select>
+            }} />
           </div>
         </div>
       </div>

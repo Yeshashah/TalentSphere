@@ -38,7 +38,13 @@ export default function SavedCandidates() {
           base44.entities.CandidateProfile.filter({ id }).then(c => c[0])
         )
       );
-      return allCandidates.filter(Boolean);
+      const filtered = allCandidates.filter(Boolean);
+      const seen = new Set();
+      return filtered.filter(c => {
+        if (seen.has(c.id)) return false;
+        seen.add(c.id);
+        return true;
+      });
     },
     enabled: savedItems.length > 0,
   });

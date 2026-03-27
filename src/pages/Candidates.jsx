@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Users, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Users, ChevronLeft, ChevronRight, Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import CandidateCard from '../components/candidates/CandidateCard';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
@@ -11,6 +12,7 @@ import EmptyState from '../components/shared/EmptyState';
 import CandidateFilters from '../components/candidates/CandidateFilters';
 
 export default function Candidates() {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState({
     search: '',
     titles: [],
@@ -76,8 +78,12 @@ export default function Candidates() {
     <div className="min-h-screen bg-slate-50">
       <div className="bg-white border-b">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
-          
-          
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-3xl font-bold text-slate-900">Find Candidates</h1>
+            <Button onClick={() => navigate('/SavedCandidates')} variant="outline" className="gap-2">
+              <Bookmark className="w-4 h-4" /> View Saved
+            </Button>
+          </div>
           <div className="mt-6">
             <CandidateFilters onFilterChange={(newFilters) => {
               setFilters(newFilters);

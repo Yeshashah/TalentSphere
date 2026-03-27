@@ -49,7 +49,7 @@ export default function CandidateDetail() {
       if (savedItem) {
         await base44.entities.SavedItem.delete(savedItem.id);
         setIsSaved(false);
-        toast({ title: 'Candidate removed from saved!', duration: 3000 });
+        toast({ title: 'Candidate removed from saved!' });
       } else {
         await base44.entities.SavedItem.create({
           user_email: user.email,
@@ -59,7 +59,7 @@ export default function CandidateDetail() {
           item_subtitle: candidate.job_title,
         });
         setIsSaved(true);
-        toast({ title: 'Candidate saved!', duration: 3000 });
+        toast({ title: 'Candidate saved!' });
       }
     },
   });

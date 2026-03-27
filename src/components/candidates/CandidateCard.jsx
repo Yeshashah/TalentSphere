@@ -1,15 +1,67 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Briefcase, User } from 'lucide-react';
+import { MapPin, Briefcase, User, Bookmark } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { base44 } from '@/api/base44Client';
+import { useQuery, useMutation } from '@tanstack/react-query';
 
 const availabilityLabels = {
   immediate: 'Immediate', '2_weeks': '2 weeks', '1_month': '1 month',
   '2_months': '2 months', '3_months_plus': '3+ months'
 };
 
-export default function CandidateCard({ candidate }) {
+export default function CandidateCard({ candidate, onSaveChange }) {
+  const [isSaved, setIsSaved] = useState(false);
+
+  const { data: user } = useQuery({
+    queryKey: ['me'],
+    queryFn: () => base44.auth.me().catch(() => null),
+  });
+
+  const { data: savedItem } = useQuery({
+    queryKey: ['saved-candidate', user?.email, candidate.id],
+    queryFn: async () => {
+      if (!user?.email) return null;
+      const saved = await base44.entities.SavedItem.filter({
+        user_email: user.email,
+        item_type: 'candidate',
+        item_id: candidate.id,
+      });
+      return saved[0] || null;
+    },
+    enabled: !!user?.email,
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      if (savedItem) {
+        await base44.entities.SavedItem.delete(savedItem.id);
+        setIsSaved(false);
+      } else {
+        await base44.entities.SavedItem.create({
+          user_email: user.email,
+          item_type: 'candidate',
+          item_id: candidate.id,
+          item_title: candidate.full_name,
+          item_subtitle: candidate.job_title,
+        });
+        setIsSaved(true);
+      }
+      onSaveChange?.();
+    },
+  });
+
+  useEffect(() => {
+    setIsSaved(!!savedItem);
+  }, [savedItem]);
+
+  const handleSaveClick = (e) => {
+    e.preventDefault();
+    saveMutation.mutate();
+  };
+
   return (
     <Link to={`/CandidateDetail?id=${candidate.id}`}>
       <Card className="p-6 hover:shadow-lg hover:border-indigo-100 transition-all duration-300 cursor-pointer group">
@@ -58,6 +110,17 @@ export default function CandidateCard({ candidate }) {
               </div>
             )}
           </div>
+          {user?.role === 'company' && (
+            <Button
+              onClick={handleSaveClick}
+              size="sm"
+              className={`gap-1 ml-2 ${isSaved ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-0' : ''}`}
+              variant={isSaved ? undefined : 'outline'}
+            >
+              <Bookmark className="w-4 h-4" />
+              {isSaved ? 'Saved' : 'Save'}
+            </Button>
+          )}
         </div>
       </Card>
     </Link>

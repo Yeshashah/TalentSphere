@@ -49,7 +49,7 @@ export default function CandidateDetail() {
     mutationFn: async () => {
       if (savedItem) {
         await base44.entities.SavedItem.delete(savedItem.id);
-        toast({ title: 'Candidate removed from saved!', duration: 2000 });
+        toast({ title: 'Candidate removed from saved!', duration: 100 });
       } else {
         await base44.entities.SavedItem.create({
           user_email: user.email,
@@ -58,7 +58,7 @@ export default function CandidateDetail() {
           item_title: candidate.full_name,
           item_subtitle: candidate.job_title,
         });
-        toast({ title: 'Candidate saved!', duration: 2000 });
+        toast({ title: 'Candidate saved!', duration: 100 });
       }
     },
     onSuccess: () => {
@@ -109,6 +109,7 @@ export default function CandidateDetail() {
              </Button>
              <Button
                onClick={() => saveMutation.mutate()}
+               disabled={saveMutation.isPending}
                className={`gap-2 ${
                  isSaved
                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-0'

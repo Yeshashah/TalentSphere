@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +17,7 @@ export default function CandidateDetail() {
   const id = new URLSearchParams(window.location.search).get('id');
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isSaved, setIsSaved] = useState(false);
 
   const { data: candidate, isLoading } = useQuery({
@@ -48,8 +49,7 @@ export default function CandidateDetail() {
     mutationFn: async () => {
       if (savedItem) {
         await base44.entities.SavedItem.delete(savedItem.id);
-        setIsSaved(false);
-        toast({ title: 'Candidate removed from saved!' });
+        toast({ title: 'Candidate removed from saved!', duration: 2000 });
       } else {
         await base44.entities.SavedItem.create({
           user_email: user.email,
@@ -58,9 +58,11 @@ export default function CandidateDetail() {
           item_title: candidate.full_name,
           item_subtitle: candidate.job_title,
         });
-        setIsSaved(true);
-        toast({ title: 'Candidate saved!' });
+        toast({ title: 'Candidate saved!', duration: 2000 });
       }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['saved-candidate', id, user?.email] });
     },
   });
 

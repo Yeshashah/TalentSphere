@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ export default function CandidateDetail() {
   const id = new URLSearchParams(window.location.search).get('id');
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isSaved, setIsSaved] = useState(false);
 
   const { data: candidate, isLoading } = useQuery({
     queryKey: ['candidate', id],
@@ -29,21 +30,50 @@ export default function CandidateDetail() {
     queryFn: () => base44.auth.me().catch(() => null),
   });
 
-  const saveMutation = useMutation({
-    mutationFn: async () => {
-      await base44.entities.SavedItem.create({
+  const { data: savedItem } = useQuery({
+    queryKey: ['saved-candidate', id, user?.email],
+    queryFn: async () => {
+      if (!user?.email) return null;
+      const saved = await base44.entities.SavedItem.filter({
         user_email: user.email,
         item_type: 'candidate',
-        item_id: candidate.id,
-        item_title: candidate.full_name,
-        item_subtitle: candidate.job_title,
+        item_id: id,
       });
-      toast({ title: 'Candidate saved!' });
+      return saved[0] || null;
+    },
+    enabled: !!user?.email && !!id,
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      if (savedItem) {
+        await base44.entities.SavedItem.delete(savedItem.id);
+        setIsSaved(false);
+        toast({ title: 'Candidate removed from saved!' });
+      } else {
+        await base44.entities.SavedItem.create({
+          user_email: user.email,
+          item_type: 'candidate',
+          item_id: candidate.id,
+          item_title: candidate.full_name,
+          item_subtitle: candidate.job_title,
+        });
+        setIsSaved(true);
+        toast({ title: 'Candidate saved!' });
+      }
     },
   });
 
+  React.useEffect(() => {
+    setIsSaved(!!savedItem);
+  }, [savedItem]);
+
   if (isLoading) return <LoadingSpinner />;
   if (!candidate) return <div className="p-8 text-center text-slate-500">Candidate not found</div>;
+
+  React.useEffect(() => {
+    setIsSaved(!!savedItem);
+  }, [savedItem]);
 
   return (
     <div className="min-h-screen bg-slate-50 py-8">
@@ -75,14 +105,31 @@ export default function CandidateDetail() {
           </div>
 
           {user?.role === 'company' && (
-            <div className="flex gap-3 mb-8">
-              <Button onClick={() => navigate(`/Messages?to=${candidate.user_email}`)} className="gap-2">
-                <MessageSquare className="w-4 h-4" /> Contact
-              </Button>
-              <Button variant="outline" onClick={() => saveMutation.mutate()} className="gap-2">
-                <Bookmark className="w-4 h-4" /> Save
-              </Button>
-            </div>
+           <div className="flex gap-3 mb-8">
+             <Button onClick={() => navigate(`/Messages?to=${candidate.user_email}`)} className="gap-2">
+               <MessageSquare className="w-4 h-4" /> Contact
+             </Button>
+             <Button
+               onClick={() => saveMutation.mutate()}
+               className={`gap-2 ${
+                 isSaved
+                   ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-0'
+                   : 'variant-outline'
+               }`}
+               variant={isSaved ? undefined : 'outline'}
+             >
+               <Bookmark className="w-4 h-4" /> {isSaved ? 'Saved' : 'Save'}
+             </Button>
+             {isSaved && (
+               <Button
+                 variant="outline"
+                 onClick={() => navigate('/SavedCandidates')}
+                 className="gap-2"
+               >
+                 View Saved Candidates
+               </Button>
+             )}
+           </div>
           )}
 
           {candidate.bio && (

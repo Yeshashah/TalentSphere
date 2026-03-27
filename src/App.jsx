@@ -14,6 +14,7 @@ import Jobs from './pages/Jobs';
 import JobDetail from './pages/JobDetail';
 import Candidates from './pages/Candidates';
 import CandidateDetail from './pages/CandidateDetail';
+import SavedCandidates from './pages/SavedCandidates';
 import EditCandidateProfile from './pages/EditCandidateProfile';
 import EditCompanyProfile from './pages/EditCompanyProfile';
 import CandidateDashboard from './pages/CandidateDashboard';
@@ -54,6 +55,7 @@ const AuthenticatedApp = () => {
         <Route path="/JobDetail" element={<JobDetail />} />
         <Route path="/Candidates" element={<Candidates />} />
         <Route path="/CandidateDetail" element={<CandidateDetail />} />
+        <Route path="/SavedCandidates" element={<SavedCandidates />} />
         <Route path="/EditCandidateProfile" element={<EditCandidateProfile />} />
         <Route path="/EditCompanyProfile" element={<EditCompanyProfile />} />
         <Route path="/CandidateDashboard" element={<CandidateDashboard />} />

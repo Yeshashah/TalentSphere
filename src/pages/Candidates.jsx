@@ -1,136 +1,209 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Users, ChevronLeft, ChevronRight, Bookmark } from 'lucide-react';
+import { Users, Search, MapPin, Briefcase, User, ChevronLeft, ChevronRight, Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import CandidateCard from '../components/candidates/CandidateCard';
+import { Badge } from '@/components/ui/badge';
+import CandidateDetailPanel from '../components/candidates/CandidateDetailPanel';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
 import EmptyState from '../components/shared/EmptyState';
-import CandidateFilters from '../components/candidates/CandidateFilters';
+
+const workModes = ['remote', 'onsite', 'hybrid'];
+const expRanges = ['0-2 years', '3-5 years', '6-10 years', '10+ years'];
 
 export default function Candidates() {
-  const navigate = useNavigate();
-  const [filters, setFilters] = useState({
-    search: '',
-    titles: [],
-    locations: [],
-    industries: [],
-    skills: [],
-    experience: []
-  });
+  const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState('all'); // all | saved
+  const [modeFilter, setModeFilter] = useState([]);
+  const [expFilter, setExpFilter] = useState([]);
   const [page, setPage] = useState(0);
-  const pageSize = 12;
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const pageSize = 20;
 
-  const { data: result = { candidates: [], total: 0 }, isLoading, error } = useQuery({
-    queryKey: ['candidates-db', filters, page],
-    queryFn: async () => {
-      const query = {};
-
-      if (filters.search) {
-        query.$or = [
-        { full_name: { $regex: filters.search, $options: 'i' } },
-        { job_title: { $regex: filters.search, $options: 'i' } },
-        { location: { $regex: filters.search, $options: 'i' } },
-        { industry: { $regex: filters.search, $options: 'i' } },
-        { skills: { $in: [filters.search] } }];
-
-      }
-
-      if (filters.titles.length > 0) {
-        query.job_title = { $in: filters.titles };
-      }
-
-      if (filters.locations.length > 0) {
-        query.location = { $in: filters.locations };
-      }
-
-      if (filters.industries.length > 0) {
-        query.industry = { $in: filters.industries };
-      }
-
-      if (filters.skills.length > 0) {
-        query.skills = { $in: filters.skills };
-      }
-
-      if (filters.experience.length > 0) {
-        const expRanges = filters.experience.map((exp) => {
-          if (exp === '0-2 years') return { years_of_experience: { $lte: 2 } };
-          if (exp === '3-5 years') return { years_of_experience: { $gte: 3, $lte: 5 } };
-          if (exp === '6-10 years') return { years_of_experience: { $gte: 6, $lte: 10 } };
-          if (exp === '10+ years') return { years_of_experience: { $gte: 10 } };
-        }).filter(Boolean);
-        if (expRanges.length > 0) {
-          query.$or = query.$or ? [...query.$or, ...expRanges] : expRanges;
-        }
-      }
-
-      const candidates = await base44.entities.CandidateProfile.filter(query, '-created_date', pageSize, page * pageSize);
-      return { candidates, total: candidates.length };
-    }
+  const { data: user } = useQuery({
+    queryKey: ['me'],
+    queryFn: () => base44.auth.me().catch(() => null),
   });
 
-  const candidates = result.candidates || [];
+  const { data: savedItems = [] } = useQuery({
+    queryKey: ['saved-candidates', user?.email],
+    queryFn: () => base44.entities.SavedItem.filter({ user_email: user.email, item_type: 'candidate' }, '-created_date'),
+    enabled: !!user?.email,
+  });
+  const savedCandidateIds = new Set(savedItems.map(s => s.item_id));
+
+  const { data: candidates = [], isLoading } = useQuery({
+    queryKey: ['candidates-db', page],
+    queryFn: async () => {
+      return await base44.entities.CandidateProfile.filter({}, '-created_date', pageSize, page * pageSize);
+    },
+  });
+
+  const filtered = useMemo(() => {
+    let list = candidates;
+    if (activeTab === 'saved') list = list.filter(c => savedCandidateIds.has(c.id));
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter(c =>
+        c.full_name?.toLowerCase().includes(q) ||
+        c.job_title?.toLowerCase().includes(q) ||
+        c.location?.toLowerCase().includes(q) ||
+        c.skills?.some(s => s.toLowerCase().includes(q))
+      );
+    }
+    if (expFilter.length > 0) {
+      list = list.filter(c => expFilter.some(exp => {
+        if (exp === '0-2 years') return c.years_of_experience <= 2;
+        if (exp === '3-5 years') return c.years_of_experience >= 3 && c.years_of_experience <= 5;
+        if (exp === '6-10 years') return c.years_of_experience >= 6 && c.years_of_experience <= 10;
+        if (exp === '10+ years') return c.years_of_experience > 10;
+        return false;
+      }));
+    }
+    return list;
+  }, [candidates, search, activeTab, modeFilter, expFilter, savedCandidateIds]);
+
+  useEffect(() => {
+    if (filtered.length > 0 && !selectedCandidate) setSelectedCandidate(filtered[0]);
+    if (filtered.length > 0 && selectedCandidate && !filtered.find(c => c.id === selectedCandidate.id)) setSelectedCandidate(filtered[0]);
+  }, [filtered]);
+
+  const toggleExp = (e) => setExpFilter(prev => prev.includes(e) ? prev.filter(x => x !== e) : [...prev, e]);
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="bg-white border-b">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold text-slate-900">Find Candidates</h1>
-            <Button onClick={() => navigate('/SavedCandidates')} variant="outline" className="gap-2">
-              <Bookmark className="w-4 h-4" /> View Saved
-            </Button>
+    <div className="flex flex-col h-screen bg-slate-50">
+      {/* Top bar */}
+      <div className="bg-white border-b px-4 sm:px-6 py-3 flex-shrink-0">
+        <div className="max-w-7xl mx-auto">
+          {/* Tabs */}
+          <div className="flex items-center gap-6 mb-3">
+            {[
+              { key: 'all', label: 'All Candidates' },
+              { key: 'saved', label: 'Saved Candidates' },
+            ].map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => { setActiveTab(tab.key); setSelectedCandidate(null); }}
+                className={`text-sm font-medium pb-1 border-b-2 transition-colors ${activeTab === tab.key ? 'border-yellow-400 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
-          <div className="mt-6">
-            <CandidateFilters onFilterChange={(newFilters) => {
-              setFilters(newFilters);
-              setPage(0);
-            }} />
+
+          {/* Search + Filters */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 min-w-[200px] max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input
+                placeholder="Search by name, title, skills..."
+                className="pl-9 h-9 rounded-lg text-sm"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              {expRanges.map(e => (
+                <button
+                  key={e}
+                  onClick={() => toggleExp(e)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${expFilter.includes(e) ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300'}`}
+                >
+                  {e}
+                </button>
+              ))}
+              {(expFilter.length > 0) && (
+                <button onClick={() => setExpFilter([])} className="text-xs text-indigo-600 hover:underline">
+                  Clear Filter
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        <p className="text-sm text-slate-500 mb-4">{candidates.length} candidate{candidates.length !== 1 ? 's' : ''} found</p>
-        {isLoading ?
-        <LoadingSpinner /> :
-        error ?
-        <div className="text-center py-12 text-red-500">
-            <p className="font-medium">Failed to load candidates</p>
-            <p className="text-sm mt-1">{error.message}</p>
-          </div> :
-        candidates.length === 0 ?
-        <EmptyState icon={Users} title="No candidates found" description="Try adjusting your search or filters" /> :
+      {/* Split pane */}
+      <div className="flex flex-1 overflow-hidden max-w-7xl mx-auto w-full">
+        {/* Left: Candidate List */}
+        <div className="w-80 flex-shrink-0 border-r bg-white overflow-y-auto flex flex-col">
+          <div className="px-4 py-3 border-b flex items-center justify-between flex-shrink-0">
+            <span className="font-semibold text-slate-800 text-sm">
+              {activeTab === 'saved' ? 'Saved Candidates' : 'All Candidates'}
+            </span>
+            <span className="text-xs text-slate-400">{filtered.length} Result{filtered.length !== 1 ? 's' : ''}</span>
+          </div>
 
-        <>
-            <div className="space-y-3 mb-6">
-              {candidates.map((c) => <CandidateCard key={c.id} candidate={c} />)}
-            </div>
-            <div className="flex items-center justify-center gap-2">
-              <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setPage(Math.max(0, page - 1))}
-              disabled={page === 0}>
-              
-                <ChevronLeft className="w-4 h-4" />
+          <div className="flex-1 overflow-y-auto">
+            {isLoading ? (
+              <LoadingSpinner />
+            ) : filtered.length === 0 ? (
+              <EmptyState icon={Users} title="No candidates found" description="Try adjusting your filters" />
+            ) : (
+              filtered.map(c => (
+                <button
+                  key={c.id}
+                  onClick={() => setSelectedCandidate(c)}
+                  className={`w-full text-left p-4 border-b transition-colors hover:bg-slate-50 ${selectedCandidate?.id === c.id ? 'bg-indigo-50 border-l-2 border-l-indigo-500' : ''}`}
+                >
+                  <div className="flex items-start gap-3">
+                    {c.avatar_url ? (
+                      <img src={c.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover border flex-shrink-0" />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center flex-shrink-0">
+                        <User className="w-4 h-4 text-indigo-500" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-1">
+                        <p className="text-sm font-semibold text-slate-900 truncate leading-snug">{c.full_name}</p>
+                        {savedCandidateIds.has(c.id) && <Bookmark className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0 mt-0.5 fill-indigo-500" />}
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">{c.job_title}</p>
+                      <div className="flex items-center gap-2 mt-1 text-xs text-slate-400">
+                        {c.location && <span className="inline-flex items-center gap-0.5"><MapPin className="w-3 h-3" />{c.location}</span>}
+                        {c.years_of_experience != null && <span className="inline-flex items-center gap-0.5"><Briefcase className="w-3 h-3" />{c.years_of_experience}y</span>}
+                      </div>
+                      {c.skills?.length > 0 && (
+                        <p className="text-xs text-slate-400 mt-1 truncate">
+                          Skills: {c.skills.slice(0, 3).join(' · ')}{c.skills.length > 3 ? ' ...' : ''}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              ))
+            )}
+          </div>
+
+          {/* Pagination */}
+          {!isLoading && filtered.length > 0 && activeTab === 'all' && (
+            <div className="flex items-center justify-center gap-2 p-3 border-t flex-shrink-0">
+              <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => { setPage(Math.max(0, page - 1)); setSelectedCandidate(null); }} disabled={page === 0}>
+                <ChevronLeft className="w-3 h-3" />
               </Button>
-              <span className="text-sm text-slate-600">Page {page + 1}</span>
-              <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setPage(page + 1)}
-              disabled={candidates.length < pageSize}>
-              
-                <ChevronRight className="w-4 h-4" />
+              <span className="text-xs text-slate-500">Page {page + 1}</span>
+              <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => { setPage(page + 1); setSelectedCandidate(null); }} disabled={candidates.length < pageSize}>
+                <ChevronRight className="w-3 h-3" />
               </Button>
             </div>
-          </>
-        }
+          )}
+        </div>
+
+        {/* Right: Detail */}
+        <div className="flex-1 overflow-hidden bg-white">
+          {selectedCandidate ? (
+            <CandidateDetailPanel key={selectedCandidate.id} candidate={selectedCandidate} />
+          ) : (
+            <div className="flex items-center justify-center h-full text-slate-400">
+              <div className="text-center">
+                <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                <p>Select a candidate to view profile</p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }

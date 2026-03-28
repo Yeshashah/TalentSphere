@@ -6,17 +6,16 @@ import { Users, Search, MapPin, Briefcase, User, ChevronLeft, ChevronRight, Book
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import CandidateDetailPanel from '../components/candidates/CandidateDetailPanel';
+import CandidateFilters from '../components/candidates/CandidateFilters';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
 import EmptyState from '../components/shared/EmptyState';
 
-const workModes = ['remote', 'onsite', 'hybrid'];
-const expRanges = ['0-2 years', '3-5 years', '6-10 years', '10+ years'];
+
 
 export default function Candidates() {
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState('all'); // all | saved
-  const [modeFilter, setModeFilter] = useState([]);
-  const [expFilter, setExpFilter] = useState([]);
+  const [activeTab, setActiveTab] = useState('all');
+  const [filters, setFilters] = useState({});
   const [page, setPage] = useState(0);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const pageSize = 20;
@@ -43,6 +42,18 @@ export default function Candidates() {
   const filtered = useMemo(() => {
     let list = candidates;
     if (activeTab === 'saved') list = list.filter(c => savedCandidateIds.has(c.id));
+
+    // Name filter
+    if (filters.name) {
+      const q = filters.name.toLowerCase();
+      list = list.filter(c => c.full_name?.toLowerCase().includes(q));
+    }
+    // Designation filter
+    if (filters.designation) {
+      const q = filters.designation.toLowerCase();
+      list = list.filter(c => c.job_title?.toLowerCase().includes(q));
+    }
+    // General search
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(c =>
@@ -52,24 +63,38 @@ export default function Candidates() {
         c.skills?.some(s => s.toLowerCase().includes(q))
       );
     }
-    if (expFilter.length > 0) {
-      list = list.filter(c => expFilter.some(exp => {
-        if (exp === '0-2 years') return c.years_of_experience <= 2;
-        if (exp === '3-5 years') return c.years_of_experience >= 3 && c.years_of_experience <= 5;
-        if (exp === '6-10 years') return c.years_of_experience >= 6 && c.years_of_experience <= 10;
-        if (exp === '10+ years') return c.years_of_experience > 10;
-        return false;
+    // Experience filter
+    if (filters.expRanges?.length > 0) {
+      list = list.filter(c => filters.expRanges.some(r => {
+        const exp = c.years_of_experience;
+        if (r === '10+') return exp > 10;
+        const [lo, hi] = r.split('-').map(Number);
+        return exp >= lo && exp <= hi;
       }));
     }
+    // Company (bio/resume search approximation)
+    if (filters.company) {
+      const q = filters.company.toLowerCase();
+      list = list.filter(c => c.resume_parsed_data?.toLowerCase().includes(q) || c.bio?.toLowerCase().includes(q));
+    }
+    // Skills filter
+    if (filters.skills) {
+      const skillList = filters.skills.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+      list = list.filter(c => skillList.some(sk => c.skills?.some(cs => cs.toLowerCase().includes(sk)) || c.tech_stack?.some(cs => cs.toLowerCase().includes(sk))));
+    }
+    // Education filter
+    if (filters.education?.length > 0) {
+      list = list.filter(c => filters.education.some(e => c.education_degree?.toLowerCase().includes(e.toLowerCase())));
+    }
     return list;
-  }, [candidates, search, activeTab, modeFilter, expFilter, savedCandidateIds]);
+  }, [candidates, search, activeTab, filters, savedCandidateIds]);
 
   useEffect(() => {
     if (filtered.length > 0 && !selectedCandidate) setSelectedCandidate(filtered[0]);
     if (filtered.length > 0 && selectedCandidate && !filtered.find(c => c.id === selectedCandidate.id)) setSelectedCandidate(filtered[0]);
   }, [filtered]);
 
-  const toggleExp = (e) => setExpFilter(prev => prev.includes(e) ? prev.filter(x => x !== e) : [...prev, e]);
+
 
   return (
     <div className="flex flex-col h-screen bg-slate-50">
@@ -103,28 +128,15 @@ export default function Candidates() {
                 onChange={e => setSearch(e.target.value)}
               />
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              {expRanges.map(e => (
-                <button
-                  key={e}
-                  onClick={() => toggleExp(e)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${expFilter.includes(e) ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300'}`}
-                >
-                  {e}
-                </button>
-              ))}
-              {(expFilter.length > 0) && (
-                <button onClick={() => setExpFilter([])} className="text-xs text-indigo-600 hover:underline">
-                  Clear Filter
-                </button>
-              )}
-            </div>
+
           </div>
         </div>
       </div>
 
       {/* Split pane */}
       <div className="flex flex-1 overflow-hidden max-w-7xl mx-auto w-full">
+        {/* Filter sidebar */}
+        <CandidateFilters filters={filters} onChange={setFilters} />
         {/* Left: Candidate List */}
         <div className="w-80 flex-shrink-0 border-r bg-white overflow-y-auto flex flex-col">
           <div className="px-4 py-3 border-b flex items-center justify-between flex-shrink-0">

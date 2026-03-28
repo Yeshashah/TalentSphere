@@ -9,20 +9,17 @@ import { Search, Briefcase, MapPin, Clock, Building2, Bookmark } from 'lucide-re
 import LoadingSpinner from '../components/shared/LoadingSpinner';
 import EmptyState from '../components/shared/EmptyState';
 import JobDetailPanel from '../components/jobs/JobDetailPanel';
+import JobFilters, { salaryRanges } from '../components/jobs/JobFilters';
 import { formatDistanceToNow } from 'date-fns';
 
 const typeLabels = { full_time: 'Full-time', part_time: 'Part-time', contract: 'Contract', freelance: 'Freelance', internship: 'Internship' };
 const modeLabels = { remote: 'Remote', hybrid: 'Hybrid', onsite: 'Onsite' };
 
-const workModes = ['onsite', 'hybrid', 'remote'];
-const workModeLabels = { onsite: 'Onsite', hybrid: 'Hybrid', remote: 'Remote' };
-
 export default function Jobs() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('jobs'); // jobs | saved | applied
-  const [modeFilter, setModeFilter] = useState([]);
-  const [typeFilter, setTypeFilter] = useState('all');
+  const [filters, setFilters] = useState({});
   const [selectedJob, setSelectedJob] = useState(null);
 
   const { data: user } = useQuery({
@@ -58,11 +55,32 @@ export default function Jobs() {
     return list.filter(j => {
       const q = search.toLowerCase();
       const matchSearch = !q || j.title?.toLowerCase().includes(q) || j.company_name?.toLowerCase().includes(q) || j.skills_required?.some(s => s.toLowerCase().includes(q));
-      const matchMode = modeFilter.length === 0 || modeFilter.includes(j.work_mode);
-      const matchType = typeFilter === 'all' || j.employment_type === typeFilter;
-      return matchSearch && matchMode && matchType;
+      const matchMode = !filters.workModes?.length || filters.workModes.includes(j.work_mode);
+      const matchType = !filters.empTypes?.length || filters.empTypes.includes(j.employment_type);
+      const matchIndustry = !filters.industries?.length || filters.industries.some(i => j.department?.toLowerCase().includes(i.toLowerCase()));
+      const matchLocation = !filters.location || j.location?.toLowerCase().includes(filters.location.toLowerCase());
+      const matchSkills = !filters.skills || filters.skills.split(',').map(s => s.trim().toLowerCase()).every(s => j.skills_required?.some(sk => sk.toLowerCase().includes(s)));
+      const matchExp = !filters.expRanges?.length || filters.expRanges.some(r => {
+        const exp = j.experience_required;
+        if (!exp) return false;
+        const [lo, hi] = r.split('-').map(Number);
+        if (r === '10+') return exp >= 10;
+        return exp >= lo && exp <= hi;
+      });
+      const matchSalary = !filters.salaryLabel || (() => {
+        const range = salaryRanges.find(r => r.label === filters.salaryLabel);
+        if (!range) return true;
+        return (j.salary_min || 0) >= range.min && (j.salary_max || Infinity) <= range.max;
+      })();
+      const matchPosted = !filters.postedDate || (() => {
+        if (!j.created_date) return true;
+        const days = parseInt(filters.postedDate);
+        const diff = (Date.now() - new Date(j.created_date).getTime()) / (1000 * 60 * 60 * 24);
+        return diff <= days;
+      })();
+      return matchSearch && matchMode && matchType && matchIndustry && matchLocation && matchSkills && matchExp && matchSalary && matchPosted;
     });
-  }, [jobs, search, activeTab, modeFilter, typeFilter, savedJobIds, appliedJobIds]);
+  }, [jobs, search, activeTab, filters, savedJobIds, appliedJobIds]);
 
   // Select first job when list changes
   useEffect(() => {
@@ -74,9 +92,7 @@ export default function Jobs() {
     }
   }, [filteredJobs]);
 
-  const toggleMode = (m) => {
-    setModeFilter(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m]);
-  };
+
 
   return (
     <div className="flex flex-col h-screen bg-slate-50">
@@ -100,7 +116,7 @@ export default function Jobs() {
             ))}
           </div>
 
-          {/* Search + Work mode filters */}
+          {/* Search */}
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative flex-1 min-w-[200px] max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -111,45 +127,15 @@ export default function Jobs() {
                 onChange={e => setSearch(e.target.value)}
               />
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              {workModes.map(m => (
-                <button
-                  key={m}
-                  onClick={() => toggleMode(m)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${modeFilter.includes(m) ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300'}`}
-                >
-                  {workModeLabels[m]}
-                </button>
-              ))}
-              {/* Job type filter */}
-              <select
-                value={typeFilter}
-                onChange={e => setTypeFilter(e.target.value)}
-                className="px-3 py-1.5 rounded-full text-xs font-medium border border-slate-200 bg-white text-slate-600 hover:border-indigo-300 cursor-pointer"
-              >
-                <option value="all">All Types</option>
-                <option value="full_time">Full-time</option>
-                <option value="part_time">Part-time</option>
-                <option value="contract">Contract</option>
-                <option value="freelance">Freelance</option>
-                <option value="internship">Internship</option>
-              </select>
-              {(modeFilter.length > 0 || typeFilter !== 'all') && (
-                <button
-                  onClick={() => { setModeFilter([]); setTypeFilter('all'); }}
-                  className="text-xs text-indigo-600 hover:underline"
-                >
-                  Clear Filter
-                </button>
-              )}
-            </div>
           </div>
         </div>
       </div>
 
-      {/* Main split pane */}
+      {/* Main split pane */
       <div className="flex flex-1 overflow-hidden max-w-7xl mx-auto w-full">
-        {/* Left: Job List */}
+        {/* Filter sidebar */}
+        <JobFilters filters={filters} onChange={setFilters} />
+        {/* Left: Job List */
         <div className="w-80 flex-shrink-0 border-r bg-white overflow-y-auto">
           <div className="px-4 py-3 border-b flex items-center justify-between">
             <div className="flex items-center gap-2">

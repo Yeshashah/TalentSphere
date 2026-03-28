@@ -23,6 +23,23 @@ export default function Messages() {
 
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
 
+  // Fetch all profiles to resolve names
+  const { data: candidateProfiles = [] } = useQuery({
+    queryKey: ['all-candidate-profiles'],
+    queryFn: () => base44.entities.CandidateProfile.list(),
+  });
+  const { data: companyProfiles = [] } = useQuery({
+    queryKey: ['all-company-profiles'],
+    queryFn: () => base44.entities.CompanyProfile.list(),
+  });
+
+  const profileMap = useMemo(() => {
+    const map = {};
+    candidateProfiles.forEach(p => { map[p.user_email] = { name: p.full_name, subtitle: p.job_title }; });
+    companyProfiles.forEach(p => { map[p.user_email] = { name: p.recruiter_name || p.company_name, subtitle: p.company_name }; });
+    return map;
+  }, [candidateProfiles, companyProfiles]);
+
   const { data: allMessages = [], isLoading } = useQuery({
     queryKey: ['all-messages', user?.email],
     queryFn: async () => {
@@ -129,7 +146,12 @@ export default function Messages() {
                         <User className="w-4 h-4 text-slate-500" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-900 truncate">{conv.other_name || conv.other_email}</p>
+                        <p className="text-sm font-medium text-slate-900 truncate">
+                            {profileMap[conv.other_email]?.name || conv.other_name || conv.other_email}
+                          </p>
+                          {profileMap[conv.other_email]?.subtitle && (
+                            <p className="text-xs text-indigo-500 truncate">{profileMap[conv.other_email].subtitle}</p>
+                          )}
                         <p className="text-xs text-slate-500 truncate">{conv.messages[conv.messages.length - 1]?.content}</p>
                       </div>
                       {conv.unread > 0 && (
@@ -147,7 +169,12 @@ export default function Messages() {
             {(activeConv || toParam) ? (
               <>
                 <div className="p-4 border-b">
-                  <p className="font-medium text-slate-900">{activeConv?.other_name || activeConv?.other_email || toParam}</p>
+                  <p className="font-medium text-slate-900">
+                    {profileMap[activeConv?.other_email]?.name || activeConv?.other_name || activeConv?.other_email || toParam}
+                  </p>
+                  {activeConv && profileMap[activeConv?.other_email]?.subtitle && (
+                    <p className="text-xs text-indigo-500">{profileMap[activeConv.other_email].subtitle}</p>
+                  )}
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-3">
                   {(activeConv?.messages || []).map(m => (

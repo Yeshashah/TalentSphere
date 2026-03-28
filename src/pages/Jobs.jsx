@@ -9,7 +9,7 @@ import { Search, Briefcase, MapPin, Clock, Building2, Bookmark } from 'lucide-re
 import LoadingSpinner from '../components/shared/LoadingSpinner';
 import EmptyState from '../components/shared/EmptyState';
 import JobDetailPanel from '../components/jobs/JobDetailPanel';
-import JobFilters, { salaryRanges } from '../components/jobs/JobFilters';
+import JobFilters, { salaryRanges } from '../components/jobs/JobFilters.jsx';
 import { formatDistanceToNow } from 'date-fns';
 
 const typeLabels = { full_time: 'Full-time', part_time: 'Part-time', contract: 'Contract', freelance: 'Freelance', internship: 'Internship' };
@@ -131,11 +131,11 @@ export default function Jobs() {
         </div>
       </div>
 
-      {/* Main split pane */
+      {/* Main split pane */}
       <div className="flex flex-1 overflow-hidden max-w-7xl mx-auto w-full">
         {/* Filter sidebar */}
         <JobFilters filters={filters} onChange={setFilters} />
-        {/* Left: Job List */
+        {/* Left: Job List */}
         <div className="w-80 flex-shrink-0 border-r bg-white overflow-y-auto">
           <div className="px-4 py-3 border-b flex items-center justify-between">
             <div className="flex items-center gap-2">

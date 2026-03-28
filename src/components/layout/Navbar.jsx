@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, X, Briefcase, Users, LogOut, LayoutDashboard, MessageSquare } from 'lucide-react';
+import { Menu, Briefcase, Users, LogOut, LayoutDashboard, MessageSquare } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 export default function Navbar({ user }) {
@@ -35,6 +35,7 @@ export default function Navbar({ user }) {
   ];
 
   const roleLinks = role === 'company' ? companyLinks : role === 'admin' ? adminLinks : candidateLinks;
+  const navLinks = user ? roleLinks : publicLinks;
 
   const isActive = (path) => location.pathname === path;
 
@@ -51,45 +52,33 @@ export default function Navbar({ user }) {
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-1">
-            {publicLinks.map(link => (
+            {navLinks.map(link => (
               <Link
                 key={link.to}
                 to={link.to}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
                   isActive(link.to)
                     ? 'bg-indigo-50 text-indigo-700'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
               >
+                {link.icon && <link.icon className="w-4 h-4" />}
                 {link.label}
               </Link>
             ))}
           </div>
 
+          {/* Right actions */}
           <div className="hidden md:flex items-center gap-2">
             {user ? (
-              <>
-                {roleLinks.map(link => (
-                  <Link key={link.to} to={link.to}>
-                    <Button
-                      variant={isActive(link.to) ? 'default' : 'ghost'}
-                      size="sm"
-                      className="gap-2"
-                    >
-                      {link.icon && <link.icon className="w-4 h-4" />}
-                      {link.label}
-                    </Button>
-                  </Link>
-                ))}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => base44.auth.logout()}
-                  className="text-slate-500"
-                >
-                  <LogOut className="w-4 h-4" />
-                </Button>
-              </>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => base44.auth.logout()}
+                className="text-slate-500"
+              >
+                <LogOut className="w-4 h-4" />
+              </Button>
             ) : (
               <Button size="sm" onClick={() => base44.auth.redirectToLogin()}>
                 Get Started
@@ -106,20 +95,7 @@ export default function Navbar({ user }) {
             </SheetTrigger>
             <SheetContent side="right" className="w-72">
               <div className="flex flex-col gap-2 mt-8">
-                {publicLinks.map(link => (
-                  <Link
-                    key={link.to}
-                    to={link.to}
-                    onClick={() => setOpen(false)}
-                    className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                      isActive(link.to) ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-                <div className="border-t my-2" />
-                {user && roleLinks.map(link => (
+                {navLinks.map(link => (
                   <Link
                     key={link.to}
                     to={link.to}
@@ -132,6 +108,7 @@ export default function Navbar({ user }) {
                     {link.label}
                   </Link>
                 ))}
+                <div className="border-t my-2" />
                 {user ? (
                   <Button variant="ghost" onClick={() => { base44.auth.logout(); setOpen(false); }}>
                     <LogOut className="w-4 h-4 mr-2" /> Sign Out

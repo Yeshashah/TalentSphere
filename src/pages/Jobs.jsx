@@ -32,7 +32,21 @@ export default function Jobs() {
       try {
         const response = await base44.functions.invoke('fetchCompanyProfiles', {});
         const profiles = response.data?.profiles || [];
-        setSupabaseJobs(profiles);
+        // Transform Supabase company profiles to job-like format
+        const transformedJobs = profiles.map(profile => ({
+          id: profile.id,
+          title: `Hiring at ${profile.company_name}`,
+          company_name: profile.company_name,
+          company_logo: profile.logo_url,
+          location: profile.headquarters,
+          work_mode: 'remote',
+          employment_type: 'full_time',
+          description: profile.description || `Join ${profile.company_name} - a company in the ${profile.industry} industry.`,
+          company_email: profile.recruiter_email,
+          skills_required: [],
+          created_date: profile.created_at,
+        }));
+        setSupabaseJobs(transformedJobs);
       } catch (error) {
         console.error('Error fetching from Supabase:', error);
         setSupabaseJobs([]);

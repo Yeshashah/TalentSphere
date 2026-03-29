@@ -27,6 +27,11 @@ export default function Home() {
     navigate('/Jobs');
   };
 
+  const handleFindTalent = async () => {
+    setLoading(true);
+    navigate('/Candidates');
+  };
+
   return (
     <div className="overflow-hidden">
       {/* Hero */}
@@ -58,11 +63,9 @@ export default function Home() {
               <Button onClick={handleFindJobs} disabled={loading} size="lg" className="gap-2 h-12 px-8 text-base rounded-xl">
                 <Briefcase className="w-5 h-5" /> {loading ? 'Loading...' : 'Find Jobs'}
               </Button>
-              <Link to="/Candidates">
-                <Button variant="outline" size="lg" className="gap-2 h-12 px-8 text-base rounded-xl">
-                  <Users className="w-5 h-5" /> Find Talent
-                </Button>
-              </Link>
+              <Button onClick={handleFindTalent} variant="outline" size="lg" disabled={loading} className="gap-2 h-12 px-8 text-base rounded-xl">
+                <Users className="w-5 h-5" /> {loading ? 'Loading...' : 'Find Talent'}
+              </Button>
             </div>
           </motion.div>
         </div>

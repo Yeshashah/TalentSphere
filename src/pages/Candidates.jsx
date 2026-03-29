@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { useLocation } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Users, Search, MapPin, Briefcase, User, ChevronLeft, ChevronRight, Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,12 +14,33 @@ import EmptyState from '../components/shared/EmptyState';
 
 
 export default function Candidates() {
+  const location = useLocation();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [filters, setFilters] = useState({});
   const [page, setPage] = useState(0);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [supabaseCandidates, setSupabaseCandidates] = useState(null);
+  const [fetchingSupabase, setFetchingSupabase] = useState(false);
   const pageSize = 20;
+
+  // Fetch from Supabase on page load
+  useEffect(() => {
+    const fetchSupabaseData = async () => {
+      setFetchingSupabase(true);
+      try {
+        const response = await base44.functions.invoke('fetchCandidateProfiles', {});
+        const profiles = response.data?.candidates || [];
+        setSupabaseCandidates(profiles);
+      } catch (error) {
+        console.error('Error fetching candidates from Supabase:', error);
+        setSupabaseCandidates([]);
+      } finally {
+        setFetchingSupabase(false);
+      }
+    };
+    fetchSupabaseData();
+  }, []);
 
   const { data: user } = useQuery({
     queryKey: ['me'],
@@ -32,12 +54,16 @@ export default function Candidates() {
   });
   const savedCandidateIds = new Set(savedItems.map(s => s.item_id));
 
-  const { data: candidates = [], isLoading } = useQuery({
+  const { data: dbCandidates = [], isLoading: isLoadingDb } = useQuery({
     queryKey: ['candidates-db', page],
     queryFn: async () => {
       return await base44.entities.CandidateProfile.filter({}, '-created_date', pageSize, page * pageSize);
     },
   });
+
+  // Use Supabase data if available, otherwise use Base44 candidates
+  const candidates = supabaseCandidates && supabaseCandidates.length > 0 ? supabaseCandidates : dbCandidates;
+  const isLoading = isLoadingDb || fetchingSupabase;
 
   const filtered = useMemo(() => {
     let list = candidates;

@@ -27,7 +27,8 @@ export default function Home() {
     setLoading(true);
     try {
       const response = await base44.functions.invoke('fetchCompanyProfiles', {});
-      const profiles = response.data.profiles;
+      const profiles = response.data?.profiles || [];
+      setLoading(false);
       navigate('/Jobs', { state: { companyProfiles: profiles } });
     } catch (error) {
       console.error('Error fetching profiles:', error);

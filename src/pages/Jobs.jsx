@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,10 +17,12 @@ const modeLabels = { remote: 'Remote', hybrid: 'Hybrid', onsite: 'Onsite' };
 
 export default function Jobs() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('jobs'); // jobs | saved | applied
   const [filters, setFilters] = useState({});
   const [selectedJob, setSelectedJob] = useState(null);
+  const companyProfiles = location.state?.companyProfiles || [];
 
   const { data: user } = useQuery({
     queryKey: ['me'],
@@ -29,7 +31,12 @@ export default function Jobs() {
 
   const { data: jobs = [], isLoading } = useQuery({
     queryKey: ['jobs'],
-    queryFn: () => base44.entities.Job.filter({ status: 'open' }, '-created_date'),
+    queryFn: async () => {
+      if (companyProfiles.length > 0) {
+        return companyProfiles;
+      }
+      return base44.entities.Job.filter({ status: 'open' }, '-created_date');
+    },
   });
 
   const { data: savedItems = [] } = useQuery({

@@ -1,6 +1,7 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { Search, Users, Briefcase, ArrowRight, Zap, Shield, Globe, Star } from 'lucide-react';
 
@@ -19,6 +20,21 @@ const features = [
 ];
 
 export default function Home() {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
+  const handleFindJobs = async () => {
+    setLoading(true);
+    try {
+      const response = await base44.functions.invoke('fetchCompanyProfiles', {});
+      const profiles = response.data.profiles;
+      navigate('/Jobs', { state: { companyProfiles: profiles } });
+    } catch (error) {
+      console.error('Error fetching profiles:', error);
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="overflow-hidden">
       {/* Hero */}
@@ -47,11 +63,9 @@ export default function Home() {
               A two-sided marketplace connecting exceptional candidates with innovative companies. Discover, connect, and hire — all in one place.
             </p>
             <div className="flex flex-wrap gap-4 mt-10">
-              <Link to="/Jobs">
-                <Button size="lg" className="gap-2 h-12 px-8 text-base rounded-xl">
-                  <Briefcase className="w-5 h-5" /> Find Jobs
-                </Button>
-              </Link>
+              <Button onClick={handleFindJobs} disabled={loading} size="lg" className="gap-2 h-12 px-8 text-base rounded-xl">
+                <Briefcase className="w-5 h-5" /> {loading ? 'Loading...' : 'Find Jobs'}
+              </Button>
               <Link to="/Candidates">
                 <Button variant="outline" size="lg" className="gap-2 h-12 px-8 text-base rounded-xl">
                   <Users className="w-5 h-5" /> Find Talent

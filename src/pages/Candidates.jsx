@@ -31,7 +31,25 @@ export default function Candidates() {
       try {
         const response = await base44.functions.invoke('fetchCandidateProfiles', {});
         const profiles = response.data?.candidates || [];
-        setSupabaseCandidates(profiles);
+        // Transform Supabase candidate profiles to match expected format
+        const transformedCandidates = profiles.map(profile => ({
+          id: profile.id,
+          full_name: profile.full_name || 'Unknown',
+          job_title: profile.job_title || 'Job Title Not Specified',
+          location: profile.location || '',
+          avatar_url: profile.avatar_url || '',
+          skills: profile.skills || [],
+          years_of_experience: profile.years_of_experience || 0,
+          bio: profile.bio || '',
+          tech_stack: profile.tech_stack || [],
+          education_degree: profile.education_degree || '',
+          education_university: profile.education_university || '',
+          linkedin: profile.linkedin || '',
+          portfolio: profile.portfolio || '',
+          resume_url: profile.resume_url || '',
+          expected_salary: profile.expected_salary || 0,
+        }));
+        setSupabaseCandidates(transformedCandidates);
       } catch (error) {
         console.error('Error fetching candidates from Supabase:', error);
         setSupabaseCandidates([]);

@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { Search, Users, Briefcase, ArrowRight, Zap, Shield, Globe, Star } from 'lucide-react';
 
@@ -20,23 +19,6 @@ const features = [
 ];
 
 export default function Home() {
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-
-  const handleFindJobs = async () => {
-    setLoading(true);
-    try {
-      const response = await base44.functions.invoke('fetchCompanyProfiles', {});
-      const profiles = response.data.profiles;
-      console.log('Fetched company profiles:', profiles);
-      navigate('/Jobs');
-    } catch (error) {
-      console.error('Error fetching profiles:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="overflow-hidden">
       {/* Hero */}
@@ -65,14 +47,11 @@ export default function Home() {
               A two-sided marketplace connecting exceptional candidates with innovative companies. Discover, connect, and hire — all in one place.
             </p>
             <div className="flex flex-wrap gap-4 mt-10">
-              <Button
-                size="lg"
-                className="gap-2 h-12 px-8 text-base rounded-xl"
-                onClick={handleFindJobs}
-                disabled={loading}
-              >
-                <Briefcase className="w-5 h-5" /> {loading ? 'Loading...' : 'Find Jobs'}
-              </Button>
+              <Link to="/Jobs">
+                <Button size="lg" className="gap-2 h-12 px-8 text-base rounded-xl">
+                  <Briefcase className="w-5 h-5" /> Find Jobs
+                </Button>
+              </Link>
               <Link to="/Candidates">
                 <Button variant="outline" size="lg" className="gap-2 h-12 px-8 text-base rounded-xl">
                   <Users className="w-5 h-5" /> Find Talent

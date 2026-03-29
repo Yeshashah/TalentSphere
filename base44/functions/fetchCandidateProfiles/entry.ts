@@ -9,8 +9,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') || 'https://gowczgtpmggjulmpuiia.supabase.co';
-    const apiKey = 'sb_publishable_wLtObTdsiDL6h6cGjhv7cA_Xha7q8f';
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const apiKey = Deno.env.get('SUPABASE_API_KEY');
+
+    if (!supabaseUrl || !apiKey) {
+      return Response.json({ error: 'Missing Supabase credentials' }, { status: 500 });
+    }
 
     const response = await fetch(`${supabaseUrl}/rest/v1/candidate_profiles?limit=100`, {
       method: 'GET',

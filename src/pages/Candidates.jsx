@@ -84,7 +84,7 @@ export default function Candidates() {
   const isLoading = isLoadingDb || fetchingSupabase;
 
   const filtered = useMemo(() => {
-    let list = candidates;
+    let list = Array.isArray(candidates) ? candidates : [];
     if (activeTab === 'saved') list = list.filter(c => savedCandidateIds.has(c.id));
 
     // Name filter
@@ -134,9 +134,12 @@ export default function Candidates() {
   }, [candidates, search, activeTab, filters, savedCandidateIds]);
 
   useEffect(() => {
-    if (filtered.length > 0 && !selectedCandidate) setSelectedCandidate(filtered[0]);
-    if (filtered.length > 0 && selectedCandidate && !filtered.find(c => c.id === selectedCandidate.id)) setSelectedCandidate(filtered[0]);
-  }, [filtered]);
+    if (filtered.length > 0 && !selectedCandidate) {
+      setSelectedCandidate(filtered[0]);
+    } else if (filtered.length > 0 && selectedCandidate && !filtered.find(c => c.id === selectedCandidate.id)) {
+      setSelectedCandidate(filtered[0]);
+    }
+  }, [filtered, selectedCandidate]);
 
 
 

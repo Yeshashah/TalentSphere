@@ -22,7 +22,26 @@ export default function Jobs() {
   const [activeTab, setActiveTab] = useState('jobs'); // jobs | saved | applied
   const [filters, setFilters] = useState({});
   const [selectedJob, setSelectedJob] = useState(null);
-  const companyProfiles = location.state?.companyProfiles || [];
+  const [supabaseJobs, setSupabaseJobs] = useState(null);
+  const [fetchingSupabase, setFetchingSupabase] = useState(false);
+
+  // Fetch from Supabase on page load
+  useEffect(() => {
+    const fetchSupabaseData = async () => {
+      setFetchingSupabase(true);
+      try {
+        const response = await base44.functions.invoke('fetchCompanyProfiles', {});
+        const profiles = response.data?.profiles || [];
+        setSupabaseJobs(profiles);
+      } catch (error) {
+        console.error('Error fetching from Supabase:', error);
+        setSupabaseJobs([]);
+      } finally {
+        setFetchingSupabase(false);
+      }
+    };
+    fetchSupabaseData();
+  }, []);
 
   const { data: user } = useQuery({
     queryKey: ['me'],
@@ -31,13 +50,12 @@ export default function Jobs() {
 
   const { data: jobs = [], isLoading } = useQuery({
     queryKey: ['jobs'],
-    queryFn: async () => {
-      if (companyProfiles.length > 0) {
-        return companyProfiles;
-      }
-      return base44.entities.Job.filter({ status: 'open' }, '-created_date');
-    },
+    queryFn: () => base44.entities.Job.filter({ status: 'open' }, '-created_date'),
   });
+
+  // Use Supabase data if available, otherwise use Base44 jobs
+  const displayJobs = supabaseJobs && supabaseJobs.length > 0 ? supabaseJobs : jobs;
+  const displayLoading = isLoading || fetchingSupabase;
 
   const { data: savedItems = [] } = useQuery({
     queryKey: ['saved-jobs', user?.email],
@@ -55,7 +73,7 @@ export default function Jobs() {
   const appliedJobIds = new Set(applications.map(a => a.job_id));
 
   const filteredJobs = useMemo(() => {
-    let list = jobs;
+    let list = displayJobs;
     if (activeTab === 'saved') list = jobs.filter(j => savedJobIds.has(j.id));
     if (activeTab === 'applied') list = jobs.filter(j => appliedJobIds.has(j.id));
 
@@ -87,7 +105,7 @@ export default function Jobs() {
       })();
       return matchSearch && matchMode && matchType && matchIndustry && matchLocation && matchSkills && matchExp && matchSalary && matchPosted;
     });
-  }, [jobs, search, activeTab, filters, savedJobIds, appliedJobIds]);
+  }, [displayJobs, search, activeTab, filters, savedJobIds, appliedJobIds]);
 
   // Select first job when list changes
   useEffect(() => {
@@ -153,7 +171,7 @@ export default function Jobs() {
             <span className="text-xs text-slate-400">Showing {filteredJobs.length} Result{filteredJobs.length !== 1 ? 's' : ''}</span>
           </div>
 
-          {isLoading ? (
+          {displayLoading ? (
             <LoadingSpinner />
           ) : filteredJobs.length === 0 ? (
             <EmptyState icon={Briefcase} title="No jobs found" description="Try adjusting your filters" />

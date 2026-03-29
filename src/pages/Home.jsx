@@ -23,17 +23,8 @@ export default function Home() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  const handleFindJobs = async () => {
-    setLoading(true);
-    try {
-      const response = await base44.functions.invoke('fetchCompanyProfiles', {});
-      const profiles = response.data?.profiles || [];
-      setLoading(false);
-      navigate('/Jobs', { state: { companyProfiles: profiles } });
-    } catch (error) {
-      console.error('Error fetching profiles:', error);
-      setLoading(false);
-    }
+  const handleFindJobs = () => {
+    navigate('/Jobs');
   };
 
   return (

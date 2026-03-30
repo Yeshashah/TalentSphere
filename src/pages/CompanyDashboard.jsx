@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
-import { Briefcase, FileText, Users, MessageSquare, Plus, ArrowRight, Edit, Building2, CreditCard } from 'lucide-react';
+import { Briefcase, FileText, Users, MessageSquare, Plus, ArrowRight, Edit, Building2 } from 'lucide-react';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
 import StatusBadge from '../components/shared/StatusBadge';
 
@@ -127,11 +127,6 @@ export default function CompanyDashboard() {
               <Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-slate-600">
                 <MessageSquare className="w-4 h-4" /> Messages
                 {messages.length > 0 && <Badge className="ml-auto text-xs">{messages.length}</Badge>}
-              </Button>
-            </Link>
-            <Link to="/Pricing">
-              <Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-indigo-600 font-medium">
-                <CreditCard className="w-4 h-4" /> {company?.subscription_plan === 'pro' ? 'Manage Plan' : 'Upgrade to Pro'}
               </Button>
             </Link>
           </div>

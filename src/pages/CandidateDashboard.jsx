@@ -78,15 +78,15 @@ export default function CandidateDashboard() {
         <div className="w-72 flex-shrink-0 border-r bg-white overflow-y-auto p-5">
           {/* Profile card */}
           <div className="flex flex-col items-center text-center mb-6">
-            {(profile?.candidate_photo || profile?.avatar_url) ? (
-              <img src={profile.candidate_photo || profile.avatar_url} alt="" className="w-16 h-16 rounded-2xl object-cover border-2 border-white shadow mb-3" />
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt="" className="w-16 h-16 rounded-2xl object-cover border-2 border-white shadow mb-3" />
             ) : (
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center mb-3">
                 <User className="w-8 h-8 text-indigo-500" />
               </div>
             )}
-            <p className="font-bold text-slate-900">{profile?.candidate_name || profile?.full_name || user?.full_name || 'Your Name'}</p>
-            <p className="text-xs text-slate-500 mt-0.5">{profile?.candidate_job_title || profile?.job_title || 'No title set'}</p>
+            <p className="font-bold text-slate-900">{profile?.full_name || user?.full_name || 'Your Name'}</p>
+            <p className="text-xs text-slate-500 mt-0.5">{profile?.job_title || 'No title set'}</p>
             {profile?.open_to_work && (
               <Badge className="mt-2 bg-green-50 text-green-700 border-green-200 text-xs">Open to Work</Badge>
             )}

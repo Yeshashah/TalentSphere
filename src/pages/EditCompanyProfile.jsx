@@ -39,17 +39,12 @@ export default function EditCompanyProfile() {
 
   const mutation = useMutation({
     mutationFn: async (data) => {
-      const saved = existing
-        ? await base44.entities.CompanyProfile.update(existing.id, data)
-        : await base44.entities.CompanyProfile.create(data);
-      // Mark profile setup complete in User table
-      await base44.auth.updateMe({ profile_setup_complete: true });
-      return saved;
+      if (existing) return base44.entities.CompanyProfile.update(existing.id, data);
+      return base44.entities.CompanyProfile.create(data);
     },
     onSuccess: () => {
       toast({ title: 'Company profile saved!' });
       queryClient.invalidateQueries({ queryKey: ['my-company-profile'] });
-      queryClient.invalidateQueries({ queryKey: ['me'] });
       navigate('/CompanyDashboard');
     },
   });

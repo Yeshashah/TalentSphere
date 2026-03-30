@@ -42,17 +42,12 @@ export default function EditCandidateProfile() {
 
   const mutation = useMutation({
     mutationFn: async (data) => {
-      const saved = existing
-        ? await base44.entities.CandidateProfile.update(existing.id, data)
-        : await base44.entities.CandidateProfile.create(data);
-      // Mark profile setup complete in User table
-      await base44.auth.updateMe({ profile_setup_complete: true });
-      return saved;
+      if (existing) return base44.entities.CandidateProfile.update(existing.id, data);
+      return base44.entities.CandidateProfile.create(data);
     },
     onSuccess: () => {
       toast({ title: 'Profile saved!' });
       queryClient.invalidateQueries({ queryKey: ['my-candidate-profile'] });
-      queryClient.invalidateQueries({ queryKey: ['me'] });
       navigate('/CandidateDashboard');
     },
   });

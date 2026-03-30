@@ -5,10 +5,13 @@ import { useLocation } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Users, Search, MapPin, Briefcase, User, ChevronLeft, ChevronRight, Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import CandidateDetailPanel from '../components/candidates/CandidateDetailPanel';
 import CandidateFilters from '../components/candidates/CandidateFilters';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
 import EmptyState from '../components/shared/EmptyState';
+
+
 
 export default function Candidates() {
   const location = useLocation();
@@ -21,29 +24,15 @@ export default function Candidates() {
   const [fetchingSupabase, setFetchingSupabase] = useState(false);
   const pageSize = 20;
 
-  const { data: currentUser } = useQuery({
-    queryKey: ['me'],
-    queryFn: () => base44.auth.me().catch(() => null),
-  });
-
-  const { data: savedItems = [] } = useQuery({
-    queryKey: ['saved-candidates', currentUser?.email],
-    queryFn: () => base44.entities.SavedItem.filter({ user_email: currentUser.email, item_type: 'candidate' }, '-created_date'),
-    enabled: !!currentUser?.email,
-  });
-
-  const { data: dbCandidates = [], isLoading: isLoadingDb } = useQuery({
-    queryKey: ['candidates-db', page],
-    queryFn: () => base44.entities.CandidateProfile.filter({}, '-created_date', pageSize, page * pageSize),
-  });
-
+  // Fetch from Supabase on page load
   useEffect(() => {
     const fetchSupabaseData = async () => {
       setFetchingSupabase(true);
       try {
         const response = await base44.functions.invoke('fetchCandidateProfiles', {});
         const profiles = response.data?.candidates || [];
-        const transformed = profiles.map(profile => ({
+        // Transform Supabase candidate profiles to match expected format
+        const transformedCandidates = profiles.map(profile => ({
           id: profile.id,
           full_name: profile.full_name || 'Unknown',
           job_title: profile.job_title || 'Job Title Not Specified',
@@ -60,7 +49,7 @@ export default function Candidates() {
           resume_url: profile.resume_url || '',
           expected_salary: profile.expected_salary || 0,
         }));
-        setSupabaseCandidates(transformed);
+        setSupabaseCandidates(transformedCandidates);
       } catch (error) {
         console.error('Error fetching candidates from Supabase:', error);
         setSupabaseCandidates([]);
@@ -71,21 +60,44 @@ export default function Candidates() {
     fetchSupabaseData();
   }, []);
 
+  const { data: user } = useQuery({
+    queryKey: ['me'],
+    queryFn: () => base44.auth.me().catch(() => null),
+  });
+
+  const { data: savedItems = [] } = useQuery({
+    queryKey: ['saved-candidates', user?.email],
+    queryFn: () => base44.entities.SavedItem.filter({ user_email: user.email, item_type: 'candidate' }, '-created_date'),
+    enabled: !!user?.email,
+  });
   const savedCandidateIds = new Set(savedItems.map(s => s.item_id));
+
+  const { data: dbCandidates = [], isLoading: isLoadingDb } = useQuery({
+    queryKey: ['candidates-db', page],
+    queryFn: async () => {
+      return await base44.entities.CandidateProfile.filter({}, '-created_date', pageSize, page * pageSize);
+    },
+  });
+
+  // Use Supabase data if available, otherwise use Base44 candidates
   const candidates = supabaseCandidates && supabaseCandidates.length > 0 ? supabaseCandidates : dbCandidates;
   const isLoading = isLoadingDb || fetchingSupabase;
 
   const filtered = useMemo(() => {
     let list = Array.isArray(candidates) ? candidates : [];
     if (activeTab === 'saved') list = list.filter(c => savedCandidateIds.has(c.id));
+
+    // Name filter
     if (filters.name) {
       const q = filters.name.toLowerCase();
       list = list.filter(c => c.full_name?.toLowerCase().includes(q));
     }
+    // Designation filter
     if (filters.designation) {
       const q = filters.designation.toLowerCase();
       list = list.filter(c => c.job_title?.toLowerCase().includes(q));
     }
+    // General search
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(c =>
@@ -95,6 +107,7 @@ export default function Candidates() {
         c.skills?.some(s => s.toLowerCase().includes(q))
       );
     }
+    // Experience filter
     if (filters.expRanges?.length > 0) {
       list = list.filter(c => filters.expRanges.some(r => {
         const exp = c.years_of_experience;
@@ -103,17 +116,17 @@ export default function Candidates() {
         return exp >= lo && exp <= hi;
       }));
     }
+    // Company (bio/resume search approximation)
     if (filters.company) {
       const q = filters.company.toLowerCase();
-      list = list.filter(c => c.bio?.toLowerCase().includes(q));
+      list = list.filter(c => c.resume_parsed_data?.toLowerCase().includes(q) || c.bio?.toLowerCase().includes(q));
     }
+    // Skills filter
     if (filters.skills) {
       const skillList = filters.skills.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
-      list = list.filter(c => skillList.some(sk =>
-        c.skills?.some(cs => cs.toLowerCase().includes(sk)) ||
-        c.tech_stack?.some(cs => cs.toLowerCase().includes(sk))
-      ));
+      list = list.filter(c => skillList.some(sk => c.skills?.some(cs => cs.toLowerCase().includes(sk)) || c.tech_stack?.some(cs => cs.toLowerCase().includes(sk))));
     }
+    // Education filter
     if (filters.education?.length > 0) {
       list = list.filter(c => filters.education.some(e => c.education_degree?.toLowerCase().includes(e.toLowerCase())));
     }
@@ -126,24 +139,16 @@ export default function Candidates() {
     } else if (filtered.length > 0 && selectedCandidate && !filtered.find(c => c.id === selectedCandidate.id)) {
       setSelectedCandidate(filtered[0]);
     }
-  }, [filtered]);
+  }, [filtered, selectedCandidate]);
 
-  if (currentUser && currentUser.role === 'candidate') {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-slate-900 mb-2">Access Restricted</h2>
-          <p className="text-slate-500">This section is for companies looking to hire talent.</p>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="flex flex-col h-screen bg-slate-50">
+      {/* Top bar */}
       <div className="bg-white border-b px-4 sm:px-6 py-3 flex-shrink-0">
         <div className="max-w-7xl mx-auto">
+          {/* Tabs */}
           <div className="flex items-center gap-6 mb-3">
             {[
               { key: 'all', label: 'All Candidates' },
@@ -158,6 +163,8 @@ export default function Candidates() {
               </button>
             ))}
           </div>
+
+          {/* Search + Filters */}
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative flex-1 min-w-[200px] max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -168,12 +175,16 @@ export default function Candidates() {
                 onChange={e => setSearch(e.target.value)}
               />
             </div>
+
           </div>
         </div>
       </div>
 
+      {/* Split pane */}
       <div className="flex flex-1 overflow-hidden max-w-7xl mx-auto w-full">
+        {/* Filter sidebar */}
         <CandidateFilters filters={filters} onChange={setFilters} />
+        {/* Left: Candidate List */}
         <div className="w-80 flex-shrink-0 border-r bg-white overflow-y-auto flex flex-col">
           <div className="px-4 py-3 border-b flex items-center justify-between flex-shrink-0">
             <span className="font-semibold text-slate-800 text-sm">
@@ -224,6 +235,7 @@ export default function Candidates() {
             )}
           </div>
 
+          {/* Pagination */}
           {!isLoading && filtered.length > 0 && activeTab === 'all' && (
             <div className="flex items-center justify-center gap-2 p-3 border-t flex-shrink-0">
               <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => { setPage(Math.max(0, page - 1)); setSelectedCandidate(null); }} disabled={page === 0}>
@@ -237,6 +249,7 @@ export default function Candidates() {
           )}
         </div>
 
+        {/* Right: Detail */}
         <div className="flex-1 overflow-hidden bg-white">
           {selectedCandidate ? (
             <CandidateDetailPanel key={selectedCandidate.id} candidate={selectedCandidate} />

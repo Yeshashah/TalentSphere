@@ -5,6 +5,8 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import Forbidden from '@/components/Forbidden';
 
 import AppLayout from './components/layout/AppLayout';
 import Home from './pages/Home';
@@ -62,8 +64,9 @@ const AuthenticatedApp = () => {
         <Route path="/CompanyDashboard" element={<CompanyDashboard />} />
         <Route path="/PostJob" element={<PostJob />} />
         <Route path="/ManageJobs" element={<ManageJobs />} />
-        <Route path="/Messages" element={<Messages />} />
-        <Route path="/AdminDashboard" element={<AdminDashboard />} />
+        <Route path="/Messages" element={<ProtectedRoute requiredRoles={['candidate', 'company', 'super_admin']}><Messages /></ProtectedRoute>} />
+        <Route path="/AdminDashboard" element={<ProtectedRoute requiredRole="super_admin"><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/forbidden" element={<Forbidden />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>
     </Routes>

@@ -14,11 +14,18 @@ export default function RoleSelect() {
   const handleContinue = async () => {
     if (!selected) return;
     setLoading(true);
-    await base44.auth.updateMe({ role: selected, user_type_setup_complete: true });
-    if (selected === 'candidate') {
-      navigate('/EditCandidateProfile');
-    } else {
-      navigate('/EditCompanyProfile');
+    try {
+      await base44.auth.updateMe({ role: selected, user_type_setup_complete: true });
+      if (selected === 'candidate') {
+        navigate('/EditCandidateProfile');
+      } else if (selected === 'company') {
+        navigate('/EditCompanyProfile');
+      } else {
+        navigate(getRoleRedirect(selected));
+      }
+    } catch (error) {
+      console.error('Error setting role:', error);
+      setLoading(false);
     }
   };
 
@@ -36,6 +43,19 @@ export default function RoleSelect() {
       desc: 'Post jobs, discover talent, and build your team.',
     },
   ];
+
+  const getRoleRedirect = (role) => {
+    switch (role) {
+      case 'candidate':
+        return '/Jobs';
+      case 'company':
+        return '/Candidates';
+      case 'super_admin':
+        return '/AdminDashboard';
+      default:
+        return '/Home';
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-orange-50/30 px-4">

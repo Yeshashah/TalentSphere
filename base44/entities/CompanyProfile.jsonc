@@ -1,0 +1,78 @@
+{
+  "name": "CompanyProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Reference to Users.userID"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of the company/recruiter user"
+    },
+    "company_name": {
+      "type": "string"
+    },
+    "linkedin_profile_name": {
+      "type": "string"
+    },
+    "linkedin_profile_url": {
+      "type": "string"
+    },
+    "linkedin_logo_url": {
+      "type": "string"
+    },
+    "company_website": {
+      "type": "string"
+    },
+    "hq_country": {
+      "type": "string",
+      "description": "HeadQuarter Country"
+    },
+    "year_founded": {
+      "type": "number"
+    },
+    "company_type": {
+      "type": "string"
+    },
+    "linkedin_industries": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "taxonomy.linkedin_industries"
+    },
+    "recent_job_openings_title": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "job_openings.recent_job_openings_title"
+    },
+    "recent_job_openings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "job_openings.recent_job_openings"
+    },
+    "all_office_addresses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "subscription_plan": {
+      "type": "string",
+      "enum": [
+        "free",
+        "pro"
+      ],
+      "default": "free"
+    }
+  },
+  "required": [
+    "user_email",
+    "company_name"
+  ]
+}

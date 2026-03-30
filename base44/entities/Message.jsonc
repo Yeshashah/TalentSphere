@@ -1,0 +1,43 @@
+{
+  "name": "Message",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Reference to Users.userID"
+    },
+    "candidate_id": {
+      "type": "string",
+      "description": "Reference to CandidateProfile"
+    },
+    "company_id": {
+      "type": "string",
+      "description": "Reference to CompanyProfile"
+    },
+    "content": {
+      "type": "string"
+    },
+    "conversation_id": {
+      "type": "string",
+      "description": "Sorted IDs joined to create unique conversation ID"
+    },
+    "sender_email": {
+      "type": "string"
+    },
+    "receiver_email": {
+      "type": "string"
+    },
+    "sender_name": {
+      "type": "string"
+    },
+    "read": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "sender_email",
+    "receiver_email",
+    "content"
+  ]
+}

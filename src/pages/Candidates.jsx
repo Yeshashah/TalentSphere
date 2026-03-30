@@ -16,6 +16,20 @@ import EmptyState from '../components/shared/EmptyState';
 export default function Candidates() {
   const location = useLocation();
   const [search, setSearch] = useState('');
+
+  const { data: currentUser } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me().catch(() => null) });
+
+  if (currentUser && currentUser.role === 'candidate') {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Access Restricted</h2>
+          <p className="text-slate-500">This section is for companies looking to hire talent.</p>
+        </div>
+      </div>
+    );
+  }
   const [activeTab, setActiveTab] = useState('all');
   const [filters, setFilters] = useState({});
   const [page, setPage] = useState(0);

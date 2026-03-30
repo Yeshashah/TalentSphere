@@ -31,7 +31,9 @@ export default function Navbar({ user }) {
   ];
 
   const adminLinks = [
-    { to: '/AdminDashboard', label: 'Admin', icon: LayoutDashboard },
+    { to: '/AdminDashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/Candidates', label: 'Candidates', icon: Users },
+    { to: '/Jobs', label: 'Jobs', icon: Briefcase },
   ];
 
   const roleLinks = role === 'company' ? companyLinks : role === 'admin' ? adminLinks : candidateLinks;

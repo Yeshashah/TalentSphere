@@ -11,6 +11,9 @@ import Forbidden from '@/components/Forbidden';
 import AppLayout from './components/layout/AppLayout';
 import Home from './pages/Home';
 import RoleSelect from './pages/RoleSelect';
+import Registration from './pages/Registration';
+import CandidateRegistration from './pages/CandidateRegistration';
+import CompanyRegistration from './pages/CompanyRegistration';
 import Pricing from './pages/Pricing';
 import Jobs from './pages/Jobs';
 import JobDetail from './pages/JobDetail';
@@ -52,6 +55,9 @@ const AuthenticatedApp = () => {
         <Route path="/" element={<Navigate to="/Home" replace />} />
         <Route path="/Home" element={<Home />} />
         <Route path="/RoleSelect" element={<RoleSelect />} />
+        <Route path="/Registration" element={<Registration />} />
+        <Route path="/CandidateRegistration" element={<CandidateRegistration />} />
+        <Route path="/CompanyRegistration" element={<CompanyRegistration />} />
         <Route path="/Pricing" element={<Pricing />} />
         <Route path="/Jobs" element={<Jobs />} />
         <Route path="/JobDetail" element={<JobDetail />} />

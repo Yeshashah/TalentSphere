@@ -10,6 +10,7 @@ import LoadingSpinner from '../components/shared/LoadingSpinner';
 import EmptyState from '../components/shared/EmptyState';
 import JobDetailPanel from '../components/jobs/JobDetailPanel';
 import JobFilters, { salaryRanges } from '../components/jobs/JobFilters.jsx';
+import ApplicationTracker from '../components/jobs/ApplicationTracker';
 import { formatDistanceToNow } from 'date-fns';
 
 const typeLabels = { full_time: 'Full-time', part_time: 'Part-time', contract: 'Contract', freelance: 'Freelance', internship: 'Internship' };
@@ -19,7 +20,7 @@ export default function Jobs() {
   const navigate = useNavigate();
   const location = useLocation();
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState('jobs'); // jobs | saved | applied
+  const [activeTab, setActiveTab] = useState('jobs'); // jobs | saved | applied | track
   const [filters, setFilters] = useState({});
   const [selectedJob, setSelectedJob] = useState(null);
   const [supabaseJobs, setSupabaseJobs] = useState(null);
@@ -88,8 +89,9 @@ export default function Jobs() {
 
   const filteredJobs = useMemo(() => {
     let list = displayJobs;
-    if (activeTab === 'saved') list = jobs.filter(j => savedJobIds.has(j.id));
-    if (activeTab === 'applied') list = jobs.filter(j => appliedJobIds.has(j.id));
+    if (activeTab === 'saved') list = displayJobs.filter(j => savedJobIds.has(j.id));
+    if (activeTab === 'applied') list = displayJobs.filter(j => appliedJobIds.has(j.id));
+    if (activeTab === 'track') return [];
 
     return list.filter(j => {
       const q = search.toLowerCase();
@@ -144,6 +146,7 @@ export default function Jobs() {
               { key: 'jobs', label: 'Jobs' },
               { key: 'saved', label: 'Saved Jobs' },
               { key: 'applied', label: 'Applied Jobs' },
+              { key: 'track', label: 'Track Application' },
             ].map(tab => (
               <button
                 key={tab.key}
@@ -230,7 +233,9 @@ export default function Jobs() {
 
         {/* Right: Job Detail */}
         <div className="flex-1 overflow-hidden bg-white">
-          {selectedJob ? (
+          {activeTab === 'track' ? (
+            <ApplicationTracker />
+          ) : selectedJob ? (
             <JobDetailPanel key={selectedJob.id} job={selectedJob} />
           ) : (
             <div className="flex items-center justify-center h-full text-slate-400">

@@ -1,24 +1,30 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Briefcase, Building2, Clock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import EmptyState from '../shared/EmptyState';
 import LoadingSpinner from '../shared/LoadingSpinner';
+import { useToast } from '@/components/ui/use-toast';
 
 const STATUS_CONFIG = {
-  applied:   { label: 'Applied',    color: 'bg-blue-100 text-blue-700' },
-  screening: { label: 'Screening',  color: 'bg-yellow-100 text-yellow-700' },
-  interview: { label: 'Interview',  color: 'bg-purple-100 text-purple-700' },
-  offer:     { label: 'Offer',      color: 'bg-green-100 text-green-700' },
-  hired:     { label: 'Hired',      color: 'bg-emerald-100 text-emerald-700' },
-  rejected:  { label: 'Rejected',   color: 'bg-red-100 text-red-700' },
+  applied:               { label: 'Applied',               color: 'bg-blue-100 text-blue-700' },
+  'under review':        { label: 'Under Review',          color: 'bg-yellow-100 text-yellow-700' },
+  'interview scheduled': { label: 'Interview Scheduled',   color: 'bg-indigo-100 text-indigo-700' },
+  'interview complete':  { label: 'Interview Complete',    color: 'bg-purple-100 text-purple-700' },
+  'offer extended':      { label: 'Offer Extended',        color: 'bg-green-100 text-green-700' },
+  hired:                 { label: 'Hired',                 color: 'bg-emerald-100 text-emerald-700' },
+  rejected:              { label: 'Rejected',              color: 'bg-red-100 text-red-700' },
+  withdrawn:             { label: 'Withdrawn',             color: 'bg-slate-100 text-slate-600' },
 };
 
-const STEPS = ['applied', 'screening', 'interview', 'offer', 'hired'];
+const STEPS = ['applied', 'under review', 'interview scheduled', 'interview complete', 'offer extended', 'hired'];
 
 export default function ApplicationTracker() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
   const { data: user } = useQuery({
     queryKey: ['me'],
     queryFn: () => base44.auth.me().catch(() => null),
@@ -28,6 +34,14 @@ export default function ApplicationTracker() {
     queryKey: ['my-applications-track', user?.email],
     queryFn: () => base44.entities.Application.filter({ candidate_email: user.email }, '-created_date'),
     enabled: !!user?.email,
+  });
+
+  const withdrawMutation = useMutation({
+    mutationFn: (appId) => base44.entities.Application.update(appId, { status: 'withdrawn' }),
+    onSuccess: () => {
+      toast({ title: 'Application withdrawn', duration: 2000 });
+      queryClient.invalidateQueries({ queryKey: ['my-applications-track'] });
+    },
   });
 
   if (isLoading) return <LoadingSpinner />;
@@ -40,9 +54,12 @@ export default function ApplicationTracker() {
       <h2 className="text-lg font-bold text-slate-900">Track Applications</h2>
 
       {applications.map(app => {
-        const statusCfg = STATUS_CONFIG[app.status] || STATUS_CONFIG.applied;
-        const isRejected = app.status === 'rejected';
-        const currentStep = isRejected ? -1 : STEPS.indexOf(app.status);
+        const status = app.status || 'applied';
+        const isRejected = status === 'rejected';
+        const isWithdrawn = status === 'withdrawn';
+        const statusCfg = STATUS_CONFIG[status] || STATUS_CONFIG.applied;
+        const currentStep = STEPS.indexOf(status);
+        const isTerminal = isRejected || isWithdrawn;
 
         return (
           <div key={app.id} className="border rounded-xl p-5 bg-white shadow-sm">
@@ -63,39 +80,60 @@ export default function ApplicationTracker() {
             </div>
 
             {/* Progress bar */}
-            {!isRejected ? (
-              <div className="flex items-center gap-1">
+            {!isTerminal ? (
+              <div className="flex items-center">
                 {STEPS.map((step, idx) => {
                   const done = idx <= currentStep;
                   return (
                     <React.Fragment key={step}>
-                      <div className={`flex flex-col items-center`} style={{ flex: 1 }}>
+                      <div className="flex flex-col items-center" style={{ flex: 1 }}>
                         <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold border-2 ${
                           done ? 'bg-indigo-500 border-indigo-500 text-white' : 'bg-white border-slate-300 text-slate-400'
                         }`}>
                           {done ? '✓' : idx + 1}
                         </div>
-                        <span className={`text-xs mt-1 capitalize ${done ? 'text-indigo-600 font-medium' : 'text-slate-400'}`}>
+                        <span className={`mt-1 text-center leading-tight ${
+                          done ? 'text-indigo-600 font-medium' : 'text-slate-400'
+                        }`} style={{ fontSize: '10px' }}>
                           {STATUS_CONFIG[step].label}
                         </span>
                       </div>
                       {idx < STEPS.length - 1 && (
-                        <div className={`h-0.5 flex-1 mb-4 ${idx < currentStep ? 'bg-indigo-500' : 'bg-slate-200'}`} />
+                        <div className={`h-0.5 mb-4 ${
+                          idx < currentStep ? 'bg-indigo-500' : 'bg-slate-200'
+                        }`} style={{ flex: 0.5 }} />
                       )}
                     </React.Fragment>
                   );
                 })}
               </div>
             ) : (
-              <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
-                This application was not moved forward.
+              <div className={`p-3 rounded-lg text-sm ${
+                isRejected
+                  ? 'bg-red-50 border border-red-200 text-red-600'
+                  : 'bg-slate-50 border border-slate-200 text-slate-600'
+              }`}>
+                {isRejected ? 'This application was not moved forward.' : 'You have withdrawn this application.'}
               </div>
             )}
 
             {/* Footer */}
-            <div className="flex items-center gap-1 mt-3 text-xs text-slate-400">
-              <Clock className="w-3 h-3" />
-              Applied {formatDistanceToNow(new Date(app.created_date), { addSuffix: true })}
+            <div className="flex items-center justify-between mt-4">
+              <div className="flex items-center gap-1 text-xs text-slate-400">
+                <Clock className="w-3 h-3" />
+                Applied {formatDistanceToNow(new Date(app.created_date), { addSuffix: true })}
+              </div>
+              {!isTerminal && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-red-500 border-red-200 hover:bg-red-50 text-xs"
+                  onClick={() => withdrawMutation.mutate(app.id)}
+                  disabled={withdrawMutation.isPending}
+                >
+                  Withdraw
+                </Button>
+              )}
             </div>
           </div>
         );

@@ -175,10 +175,9 @@ export default function Jobs() {
 
       {/* Main split pane */}
       <div className="flex flex-1 overflow-hidden max-w-7xl mx-auto w-full">
-        {/* Filter sidebar */}
-        <JobFilters filters={filters} onChange={setFilters} />
+        {activeTab !== 'track' && <JobFilters filters={filters} onChange={setFilters} />}
         {/* Left: Job List */}
-        <div className="w-80 flex-shrink-0 border-r bg-white overflow-y-auto">
+        {activeTab !== 'track' && <div className="w-80 flex-shrink-0 border-r bg-white overflow-y-auto">
           <div className="px-4 py-3 border-b flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-slate-800 text-sm">
@@ -229,7 +228,7 @@ export default function Jobs() {
               ))}
             </div>
           )}
-        </div>
+        </div>}
 
         {/* Right: Job Detail */}
         <div className="flex-1 overflow-hidden bg-white">

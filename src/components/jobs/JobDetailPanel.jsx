@@ -104,14 +104,14 @@ export default function JobDetailPanel({ job }) {
 
       {/* Actions */}
       <div className="flex items-center gap-3 mb-4">
-        {user?.role === 'candidate' && (
+        {user && (
           hasApplied ? (
             <Button disabled className="gap-2 bg-green-600 text-white">
               ✓ Applied
             </Button>
           ) : (
             <Button onClick={() => setShowApply(true)} className="gap-2 bg-indigo-600 hover:bg-indigo-700">
-              APPLY <ExternalLink className="w-3.5 h-3.5" />
+              Apply <ExternalLink className="w-3.5 h-3.5" />
             </Button>
           )
         )}

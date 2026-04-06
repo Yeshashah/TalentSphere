@@ -15,6 +15,7 @@ import SkillBadge from '../components/shared/SkillBadge';
 
 const typeLabels = { full_time: 'Full-time', part_time: 'Part-time', contract: 'Contract', freelance: 'Freelance', internship: 'Internship' };
 const modeLabels = { remote: 'Remote', hybrid: 'Hybrid', onsite: 'Onsite' };
+const levelLabels = { entry: 'Entry Level', mid: 'Mid Level', senior: 'Senior', lead: 'Lead', director: 'Director' };
 
 export default function JobDetail() {
   const id = new URLSearchParams(window.location.search).get('id');
@@ -101,9 +102,24 @@ export default function JobDetail() {
               <h1 className="text-2xl font-bold text-slate-900">{job.title}</h1>
               <p className="text-slate-500 mt-1">{job.company_name}</p>
               <div className="flex flex-wrap gap-2 mt-3">
-                {job.location && <span className="inline-flex items-center gap-1 text-sm text-slate-500"><MapPin className="w-4 h-4" /> {job.location}</span>}
+                {(job.city || job.state || job.country) && (
+                  <span className="inline-flex items-center gap-1 text-sm text-slate-500">
+                    <MapPin className="w-4 h-4" />
+                    {[job.city, job.state, job.country].filter(Boolean).join(', ')}
+                  </span>
+                )}
+                {!job.city && !job.state && !job.country && job.location && (
+                  <span className="inline-flex items-center gap-1 text-sm text-slate-500"><MapPin className="w-4 h-4" /> {job.location}</span>
+                )}
                 {job.employment_type && <Badge variant="secondary">{typeLabels[job.employment_type]}</Badge>}
                 {job.work_mode && <Badge variant="outline">{modeLabels[job.work_mode]}</Badge>}
+                {job.job_level && <Badge variant="outline">{levelLabels[job.job_level]}</Badge>}
+                {job.remote_eligible != null && <Badge variant="outline">{job.remote_eligible ? 'Remote Eligible' : 'Not Remote'}</Badge>}
+                {job.num_openings > 0 && (
+                  <span className="inline-flex items-center gap-1 text-sm text-slate-500">
+                    <Briefcase className="w-4 h-4" /> {job.num_openings} {job.num_openings === 1 ? 'Opening' : 'Openings'}
+                  </span>
+                )}
                 {(job.salary_min || job.salary_max) && (
                   <span className="inline-flex items-center gap-1 text-sm text-slate-500">
                     <DollarSign className="w-4 h-4" />
@@ -152,6 +168,12 @@ export default function JobDetail() {
             <div className="mb-6">
               <h3 className="text-sm font-semibold text-slate-900 mb-2">Requirements</h3>
               <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-wrap">{job.requirements}</p>
+            </div>
+          )}
+          {job.certifications_required && (
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-slate-900 mb-2">Certifications Required</h3>
+              <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-wrap">{job.certifications_required}</p>
             </div>
           )}
           {job.benefits && (

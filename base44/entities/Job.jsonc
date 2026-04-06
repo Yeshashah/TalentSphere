@@ -1,0 +1,118 @@
+{
+  "name": "Job",
+  "type": "object",
+  "properties": {
+    "company_email": {
+      "type": "string"
+    },
+    "company_name": {
+      "type": "string"
+    },
+    "company_logo": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "department": {
+      "type": "string"
+    },
+    "employment_type": {
+      "type": "string",
+      "enum": [
+        "full_time",
+        "part_time",
+        "contract",
+        "freelance",
+        "internship"
+      ]
+    },
+    "location": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "work_mode": {
+      "type": "string",
+      "enum": [
+        "remote",
+        "hybrid",
+        "onsite"
+      ]
+    },
+    "job_level": {
+      "type": "string",
+      "enum": [
+        "entry",
+        "mid",
+        "senior",
+        "lead",
+        "director"
+      ]
+    },
+    "num_openings": {
+      "type": "number",
+      "default": 1
+    },
+    "remote_eligible": {
+      "type": "boolean"
+    },
+    "description": {
+      "type": "string"
+    },
+    "responsibilities": {
+      "type": "string"
+    },
+    "requirements": {
+      "type": "string"
+    },
+    "certifications_required": {
+      "type": "string"
+    },
+    "skills_required": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "experience_required": {
+      "type": "number"
+    },
+    "salary_min": {
+      "type": "number"
+    },
+    "salary_max": {
+      "type": "number"
+    },
+    "benefits": {
+      "type": "string"
+    },
+    "application_deadline": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "closed"
+      ],
+      "default": "open"
+    },
+    "applications_count": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "company_email",
+    "title"
+  ]
+}

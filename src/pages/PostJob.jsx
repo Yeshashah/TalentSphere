@@ -94,7 +94,45 @@ export default function PostJob() {
                   </SelectContent>
                 </Select>
               </div>
-              <div><Label>Location</Label><Input value={form.location || ''} onChange={e => update('location', e.target.value)} /></div>
+              <div>
+                <Label>Country</Label>
+                <Input value={form.country || ''} onChange={e => update('country', e.target.value)} placeholder="e.g., United States" />
+              </div>
+              <div>
+                <Label>State / Province</Label>
+                <Input value={form.state || ''} onChange={e => update('state', e.target.value)} placeholder="e.g., California" />
+              </div>
+              <div>
+                <Label>City</Label>
+                <Input value={form.city || ''} onChange={e => update('city', e.target.value)} placeholder="e.g., San Francisco" />
+              </div>
+              <div>
+                <Label>Job Level</Label>
+                <Select value={form.job_level || ''} onValueChange={v => update('job_level', v)}>
+                  <SelectTrigger><SelectValue placeholder="Select level..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="entry">Entry</SelectItem>
+                    <SelectItem value="mid">Mid</SelectItem>
+                    <SelectItem value="senior">Senior</SelectItem>
+                    <SelectItem value="lead">Lead</SelectItem>
+                    <SelectItem value="director">Director</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Number of Openings</Label>
+                <Input type="number" min="1" value={form.num_openings || ''} onChange={e => update('num_openings', Number(e.target.value))} placeholder="e.g., 2" />
+              </div>
+              <div>
+                <Label>Remote Eligible</Label>
+                <Select value={form.remote_eligible != null ? String(form.remote_eligible) : ''} onValueChange={v => update('remote_eligible', v === 'true')}>
+                  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="true">Yes</SelectItem>
+                    <SelectItem value="false">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div>
                 <Label>Work Mode</Label>
                 <Select value={form.work_mode || ''} onValueChange={v => update('work_mode', v)}>
@@ -116,6 +154,7 @@ export default function PostJob() {
               <div><Label>Responsibilities</Label><Textarea value={form.responsibilities || ''} onChange={e => update('responsibilities', e.target.value)} className="min-h-[100px]" /></div>
               <div><Label>Requirements</Label><Textarea value={form.requirements || ''} onChange={e => update('requirements', e.target.value)} className="min-h-[100px]" /></div>
               <div><Label>Experience Required (years)</Label><Input type="number" value={form.experience_required || ''} onChange={e => update('experience_required', Number(e.target.value))} /></div>
+              <div><Label>Certifications Required (if any)</Label><Input value={form.certifications_required || ''} onChange={e => update('certifications_required', e.target.value)} placeholder="e.g., AWS Certified, PMP" /></div>
               <div>
                 <Label>Skills Required</Label>
                 <div className="flex gap-2 mt-1">

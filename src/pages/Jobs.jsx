@@ -196,7 +196,7 @@ export default function Jobs() {
               {filteredJobs.map(job => (
                 <button
                   key={job.id}
-                  onClick={() => setSelectedJob(job)}
+                  onClick={() => navigate(`/JobDetail?id=${job.id}`)}
                   className={`w-full text-left p-4 border-b transition-colors hover:bg-slate-50 ${selectedJob?.id === job.id ? 'bg-indigo-50 border-l-2 border-l-indigo-500' : ''}`}
                 >
                   <div className="flex items-start gap-3">

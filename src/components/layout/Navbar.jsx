@@ -25,16 +25,18 @@ export default function Navbar({ user }) {
 
   const companyLinks = [
     { to: '/CompanyDashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/ManageJobs', label: 'My Jobs', icon: Briefcase },
+    { to: '/PostJob', label: 'Post Job', icon: Briefcase },
     { to: '/Candidates', label: 'Find Talent', icon: Users },
-    { to: '/ManageJobs', label: 'Jobs', icon: Briefcase },
+    { to: '/SavedCandidates', label: 'Saved', icon: Users },
     { to: '/Messages', label: 'Messages', icon: MessageSquare },
   ];
 
   const adminLinks = [
-    { to: '/AdminDashboard', label: 'Admin', icon: LayoutDashboard },
+    { to: '/AdminDashboard', label: 'Admin Dashboard', icon: LayoutDashboard },
   ];
 
-  const roleLinks = role === 'company' ? companyLinks : role === 'admin' ? adminLinks : candidateLinks;
+  const roleLinks = role === 'company' ? companyLinks : role === 'super_admin' ? adminLinks : candidateLinks;
   const navLinks = user ? roleLinks : publicLinks;
 
   const isActive = (path) => location.pathname === path;

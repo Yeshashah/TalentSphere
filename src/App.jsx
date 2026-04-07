@@ -61,17 +61,16 @@ const AuthenticatedApp = () => {
         <Route path="/Pricing" element={<Pricing />} />
         <Route path="/Jobs" element={<Jobs />} />
         <Route path="/JobDetail" element={<JobDetail />} />
-        <Route path="/Candidates" element={<Candidates />} />
-        <Route path="/CandidateDetail" element={<CandidateDetail />} />
-        <Route path="/SavedCandidates" element={<SavedCandidates />} />
-        <Route path="/EditCandidateProfile" element={<EditCandidateProfile />} />
-        <Route path="/EditCompanyProfile" element={<EditCompanyProfile />} />
-        <Route path="/CandidateDashboard" element={<CandidateDashboard />} />
-        <Route path="/CompanyDashboard" element={<CompanyDashboard />} />
-        <Route path="/PostJob" element={<PostJob />} />
-        <Route path="/ManageJobs" element={<ManageJobs />} />
-        <Route path="/Messages" element={<ProtectedRoute requiredRoles={['candidate', 'company', 'super_admin']}><Messages /></ProtectedRoute>} />
-        <Route path="/AdminDashboard" element={<ProtectedRoute requiredRole="super_admin"><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/Candidates" element={<ProtectedRoute requiredRoles={['company', 'super_admin']}><Candidates /></ProtectedRoute>} />
+        <Route path="/CandidateDetail" element={<ProtectedRoute requiredRoles={['company', 'super_admin']}><CandidateDetail /></ProtectedRoute>} />
+        <Route path="/SavedCandidates" element={<ProtectedRoute requiredRoles={['company']}><SavedCandidates /></ProtectedRoute>} />
+        <Route path="/CandidateDashboard" element={<ProtectedRoute requiredRoles={['candidate']}><CandidateDashboard /></ProtectedRoute>} />
+        <Route path="/EditCandidateProfile" element={<ProtectedRoute requiredRoles={['candidate']}><EditCandidateProfile /></ProtectedRoute>} />
+        <Route path="/CompanyDashboard" element={<ProtectedRoute requiredRoles={['company']}><CompanyDashboard /></ProtectedRoute>} />
+        <Route path="/EditCompanyProfile" element={<ProtectedRoute requiredRoles={['company']}><EditCompanyProfile /></ProtectedRoute>} />
+        <Route path="/PostJob" element={<ProtectedRoute requiredRoles={['company']}><PostJob /></ProtectedRoute>} />
+        <Route path="/ManageJobs" element={<ProtectedRoute requiredRoles={['company']}><ManageJobs /></ProtectedRoute>} />
+        <Route path="/AdminDashboard" element={<ProtectedRoute requiredRoles={['super_admin']}><AdminDashboard /></ProtectedRoute>} />
         <Route path="/forbidden" element={<Forbidden />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>

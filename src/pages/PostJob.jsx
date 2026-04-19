@@ -57,8 +57,18 @@ export default function PostJob() {
       if (jobId && existingJob) return base44.entities.Job.update(existingJob.id, payload);
       return base44.entities.Job.create({ ...payload, approval_status: 'pending' });
     },
-    onSuccess: () => {
-      toast({ title: jobId ? 'Job updated!' : 'Job posted!' });
+    onSuccess: (result) => {
+      toast({ title: jobId ? 'Job updated!' : 'Job posted! It\'s pending admin approval.' });
+      // Notify admins of new job posting (fire-and-forget)
+      if (!jobId) {
+        base44.functions.invoke('createNotification', {
+          user_email: user.email,
+          type: 'job_posted',
+          title: 'Job submitted for review',
+          body: `Your job "${form.title}" has been submitted and is pending approval.`,
+          link: '/ManageJobs',
+        }).catch(() => {});
+      }
       navigate('/ManageJobs');
     },
   });

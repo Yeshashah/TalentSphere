@@ -79,7 +79,7 @@ export default function Messages() {
       return [...sent, ...received].sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
     },
     enabled: !!user?.email,
-    refetchInterval: 10000,
+    refetchInterval: 5000,
   });
 
   // Use Supabase data if available, otherwise use Base44 messages
@@ -138,6 +138,14 @@ export default function Messages() {
         content: newMsg.trim(),
         conversation_id: getConversationId(user.email, recipientEmail),
       });
+      // Trigger notification for recipient
+      base44.functions.invoke('createNotification', {
+        user_email: recipientEmail,
+        type: 'message_received',
+        title: `New message from ${user.full_name || user.email}`,
+        body: newMsg.trim().slice(0, 80),
+        link: `/Messages`,
+      }).catch(() => {});
     },
     onSuccess: () => {
       setNewMsg('');

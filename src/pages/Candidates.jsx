@@ -130,6 +130,15 @@ export default function Candidates() {
     if (filters.education?.length > 0) {
       list = list.filter(c => filters.education.some(e => c.education_degree?.toLowerCase().includes(e.toLowerCase())));
     }
+    // Open to Work filter
+    if (filters.openToWork) {
+      list = list.filter(c => c.open_to_work === true);
+    }
+    // Location filter
+    if (filters.location) {
+      const q = filters.location.toLowerCase();
+      list = list.filter(c => c.location?.toLowerCase().includes(q));
+    }
     return list;
   }, [candidates, search, activeTab, filters, savedCandidateIds]);
 

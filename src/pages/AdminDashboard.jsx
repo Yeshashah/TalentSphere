@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
@@ -7,8 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
   Users, Briefcase, Building2, FileText, CheckCircle, XCircle,
-  LayoutDashboard, ClipboardList, CreditCard, BarChart2, Search, Clock, ChevronRight
+  LayoutDashboard, ClipboardList, CreditCard, BarChart2, Search, Clock, ChevronRight, TrendingUp
 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend } from 'recharts';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
 import { useToast } from '@/components/ui/use-toast';
 import { formatDistanceToNow } from 'date-fns';
@@ -61,8 +62,22 @@ export default function AdminDashboard() {
   });
 
   const approveMutation = useMutation({
-    mutationFn: ({ id, approval_status, admin_note }) =>
-      base44.entities.Job.update(id, { approval_status, admin_note }),
+    mutationFn: async ({ id, approval_status, admin_note, job: jobOverride }) => {
+      const job = jobOverride || jobs.find(j => j.id === id);
+      await base44.entities.Job.update(id, { approval_status, admin_note });
+      // Notify the company
+      if (job?.company_email) {
+        base44.functions.invoke('createNotification', {
+          user_email: job.company_email,
+          type: approval_status === 'approved' ? 'job_approved' : 'job_rejected',
+          title: approval_status === 'approved' ? `Job Approved: ${job.title}` : `Job Rejected: ${job.title}`,
+          body: approval_status === 'approved'
+            ? 'Your job posting is now live and visible to candidates.'
+            : admin_note ? `Reason: ${admin_note}` : 'Your job posting was not approved.',
+          link: '/ManageJobs',
+        }).catch(() => {});
+      }
+    },
     onSuccess: (_, vars) => {
       toast({ title: vars.approval_status === 'approved' ? 'Job approved!' : 'Job rejected.' });
       queryClient.invalidateQueries({ queryKey: ['admin-jobs'] });
@@ -84,6 +99,39 @@ export default function AdminDashboard() {
     { icon: Clock, label: 'Pending Approvals', value: pendingJobs.length, color: 'bg-yellow-50 text-yellow-600' },
     { icon: FileText, label: 'Monthly Applications', value: applications.length, color: 'bg-emerald-50 text-emerald-600' },
   ];
+
+  // Monthly analytics
+  const monthlyData = useMemo(() => {
+    const months = {};
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = d.toLocaleString('default', { month: 'short', year: '2-digit' });
+      months[key] = { month: key, jobs: 0, applications: 0, hired: 0 };
+    }
+    jobs.forEach(j => {
+      if (!j.created_date) return;
+      const d = new Date(j.created_date);
+      const key = d.toLocaleString('default', { month: 'short', year: '2-digit' });
+      if (months[key]) months[key].jobs++;
+    });
+    applications.forEach(a => {
+      if (!a.created_date) return;
+      const d = new Date(a.created_date);
+      const key = d.toLocaleString('default', { month: 'short', year: '2-digit' });
+      if (months[key]) {
+        months[key].applications++;
+        if (a.status === 'hired') months[key].hired++;
+      }
+    });
+    return Object.values(months);
+  }, [jobs, applications]);
+
+  const subscriptionData = [
+    { name: 'Free', value: companies.filter(c => !c.subscription_plan || c.subscription_plan === 'free').length },
+    { name: 'Pro', value: companies.filter(c => c.subscription_plan === 'pro').length },
+  ];
+  const COLORS = ['#94a3b8', '#6366f1'];
 
   const filteredJobs = jobs.filter(j =>
     !search || j.title?.toLowerCase().includes(search.toLowerCase()) ||
@@ -174,11 +222,11 @@ export default function AdminDashboard() {
                           </div>
                           <div className="flex gap-1.5">
                             <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-green-600 hover:bg-green-50"
-                              onClick={() => approveMutation.mutate({ id: j.id, approval_status: 'approved' })}>
+                              onClick={() => approveMutation.mutate({ id: j.id, approval_status: 'approved', job: j })}>
                               <CheckCircle className="w-4 h-4" />
                             </Button>
                             <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-red-500 hover:bg-red-50"
-                              onClick={() => approveMutation.mutate({ id: j.id, approval_status: 'rejected' })}>
+                              onClick={() => approveMutation.mutate({ id: j.id, approval_status: 'rejected', job: j })}>
                               <XCircle className="w-4 h-4" />
                             </Button>
                           </div>
@@ -391,20 +439,87 @@ export default function AdminDashboard() {
           {activeTab === 'analytics' && (
             <>
               <h1 className="text-2xl font-bold text-slate-900 mb-6">Analytics</h1>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+
+              {/* KPI cards */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 {[
-                  { label: 'Total Companies', value: companies.length, color: 'bg-indigo-50 text-indigo-700' },
-                  { label: 'Total Candidates', value: candidates.length, color: 'bg-blue-50 text-blue-700' },
-                  { label: 'Pending Approvals', value: pendingJobs.length, color: 'bg-yellow-50 text-yellow-700' },
-                  { label: 'Total Jobs Posted', value: jobs.length, color: 'bg-slate-50 text-slate-700' },
-                  { label: 'Total Applications', value: applications.length, color: 'bg-emerald-50 text-emerald-700' },
-                  { label: 'Hiring Rate', value: `${hiringRate}%`, color: 'bg-green-50 text-green-700' },
+                  { label: 'Active Companies', value: companies.length, color: 'bg-indigo-50 text-indigo-600', icon: Building2 },
+                  { label: 'Total Candidates', value: candidates.length, color: 'bg-blue-50 text-blue-600', icon: Users },
+                  { label: 'Total Applications', value: applications.length, color: 'bg-emerald-50 text-emerald-600', icon: FileText },
+                  { label: 'Hiring Rate', value: `${hiringRate}%`, color: 'bg-green-50 text-green-600', icon: TrendingUp },
                 ].map(s => (
                   <Card key={s.label} className="p-5">
-                    <p className={`text-3xl font-bold ${s.color.split(' ')[1]}`}>{s.value}</p>
-                    <p className="text-sm text-slate-500 mt-1">{s.label}</p>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${s.color}`}>
+                        <s.icon className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-slate-900">{s.value}</p>
+                        <p className="text-xs text-slate-500">{s.label}</p>
+                      </div>
+                    </div>
                   </Card>
                 ))}
+              </div>
+
+              {/* Monthly Jobs & Applications chart */}
+              <Card className="p-5 mb-6">
+                <h2 className="font-semibold text-slate-900 mb-4">Monthly Job Openings & Applications</h2>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={monthlyData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} />
+                    <Tooltip />
+                    <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
+                    <Bar dataKey="jobs" name="Job Openings" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="applications" name="Applications" fill="#10b981" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Card>
+
+              <div className="grid lg:grid-cols-2 gap-6">
+                {/* Monthly hiring trend */}
+                <Card className="p-5">
+                  <h2 className="font-semibold text-slate-900 mb-4">Monthly Hiring Trend</h2>
+                  <ResponsiveContainer width="100%" height={180}>
+                    <LineChart data={monthlyData} margin={{ top: 0, right: 10, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                      <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                      <YAxis tick={{ fontSize: 11 }} />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="hired" name="Hired" stroke="#6366f1" strokeWidth={2} dot={{ r: 3 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </Card>
+
+                {/* Subscription breakdown */}
+                <Card className="p-5">
+                  <h2 className="font-semibold text-slate-900 mb-4">Subscription Statistics</h2>
+                  <div className="flex items-center gap-4">
+                    <ResponsiveContainer width="50%" height={160}>
+                      <PieChart>
+                        <Pie data={subscriptionData} cx="50%" cy="50%" innerRadius={45} outerRadius={70} dataKey="value" paddingAngle={3}>
+                          {subscriptionData.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="space-y-3">
+                      {subscriptionData.map((s, i) => (
+                        <div key={s.name} className="flex items-center gap-2">
+                          <span className="w-3 h-3 rounded-full" style={{ background: COLORS[i] }} />
+                          <span className="text-sm text-slate-600">{s.name}</span>
+                          <span className="font-bold text-slate-900 ml-auto">{s.value}</span>
+                        </div>
+                      ))}
+                      <div className="pt-2 border-t">
+                        <p className="text-xs text-slate-500">Total Active</p>
+                        <p className="font-bold text-lg text-slate-900">{companies.length}</p>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
               </div>
             </>
           )}

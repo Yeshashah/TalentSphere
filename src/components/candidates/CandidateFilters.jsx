@@ -113,6 +113,28 @@ export default function CandidateFilters({ filters, onChange }) {
       <FilterSection title="Education">
         <CheckGroup options={educationLevels} selected={filters.education || []} onToggle={v => toggle('education', v)} />
       </FilterSection>
+
+      <FilterSection title="Open to Work">
+        <label className="flex items-center gap-2 cursor-pointer group">
+          <input
+            type="checkbox"
+            checked={filters.openToWork === true}
+            onChange={() => set('openToWork', filters.openToWork ? undefined : true)}
+            className="rounded border-slate-300 accent-indigo-600"
+          />
+          <span className="text-xs text-slate-600 group-hover:text-slate-900">Open to Work only</span>
+        </label>
+      </FilterSection>
+
+      <FilterSection title="Location">
+        <input
+          type="text"
+          placeholder="e.g. New York, Remote"
+          value={filters.location || ''}
+          onChange={e => set('location', e.target.value)}
+          className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+        />
+      </FilterSection>
     </div>
   );
 }

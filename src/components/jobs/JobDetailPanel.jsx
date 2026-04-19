@@ -61,6 +61,24 @@ export default function JobDetailPanel({ job }) {
         candidate_name: candidateProfile?.full_name || user.full_name,
         resume_url: candidateProfile?.resume_url || '', cover_letter: coverLetter, status: 'applied',
       });
+      // Notify company of new application
+      if (job.company_email) {
+        base44.functions.invoke('createNotification', {
+          user_email: job.company_email,
+          type: 'application_submitted',
+          title: `New application for ${job.title}`,
+          body: `${candidateProfile?.full_name || user.full_name} applied to your job posting.`,
+          link: '/ManageJobs',
+        }).catch(() => {});
+      }
+      // Notify candidate
+      base44.functions.invoke('createNotification', {
+        user_email: user.email,
+        type: 'application_submitted',
+        title: `Application submitted to ${job.company_name}`,
+        body: `You applied for "${job.title}". Good luck!`,
+        link: '/Jobs',
+      }).catch(() => {});
     },
     onSuccess: () => {
       toast({ title: 'Application submitted!', description: 'Good luck!', duration: 2000 });

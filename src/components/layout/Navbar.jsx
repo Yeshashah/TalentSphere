@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu, Briefcase, Users, LogOut, LayoutDashboard, MessageSquare } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import NotificationBell from '@/components/shared/NotificationBell';
 
 export default function Navbar({ user }) {
   const [open, setOpen] = useState(false);
@@ -73,6 +74,7 @@ export default function Navbar({ user }) {
 
           {/* Right actions */}
           <div className="hidden md:flex items-center gap-2">
+            {user && <NotificationBell userEmail={user.email} />}
             {user ? (
               <Button
                 variant="ghost"

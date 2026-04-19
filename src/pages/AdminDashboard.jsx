@@ -84,8 +84,6 @@ export default function AdminDashboard() {
     },
   });
 
-  if (!user) return <LoadingSpinner />;
-
   const pendingJobs = jobs.filter(j => j.approval_status === 'pending');
   const approvedJobs = jobs.filter(j => j.approval_status === 'approved');
 
@@ -146,6 +144,8 @@ export default function AdminDashboard() {
     !search || c.full_name?.toLowerCase().includes(search.toLowerCase()) ||
     c.job_title?.toLowerCase().includes(search.toLowerCase())
   );
+
+  if (!user) return <LoadingSpinner />;
 
   return (
     <div className="flex h-screen bg-slate-50">

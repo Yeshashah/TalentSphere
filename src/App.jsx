@@ -9,6 +9,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import Forbidden from '@/components/Forbidden';
 
 import AppLayout from './components/layout/AppLayout';
+import { useEffect } from 'react';
 import Home from './pages/Home';
 import RoleSelect from './pages/RoleSelect';
 import Registration from './pages/Registration';
@@ -28,6 +29,16 @@ import PostJob from './pages/PostJob';
 import ManageJobs from './pages/ManageJobs';
 import Messages from './pages/Messages';
 import AdminDashboard from './pages/AdminDashboard';
+
+// Redirect users to their role-specific dashboard after login
+function RoleRedirect() {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/Home" replace />;
+  if (user.role === 'candidate') return <Navigate to="/CandidateDashboard" replace />;
+  if (user.role === 'company') return <Navigate to="/CompanyDashboard" replace />;
+  if (user.role === 'admin') return <Navigate to="/AdminDashboard" replace />;
+  return <Navigate to="/RoleSelect" replace />;
+}
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -52,7 +63,7 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route element={<AppLayout />}>
-        <Route path="/" element={<Navigate to="/Home" replace />} />
+        <Route path="/" element={<RoleRedirect />} />
         <Route path="/Home" element={<Home />} />
         <Route path="/RoleSelect" element={<RoleSelect />} />
         <Route path="/Registration" element={<Registration />} />
@@ -61,8 +72,8 @@ const AuthenticatedApp = () => {
         <Route path="/Pricing" element={<Pricing />} />
         <Route path="/Jobs" element={<Jobs />} />
         <Route path="/JobDetail" element={<JobDetail />} />
-        <Route path="/Candidates" element={<ProtectedRoute requiredRoles={['company', 'super_admin']}><Candidates /></ProtectedRoute>} />
-        <Route path="/CandidateDetail" element={<ProtectedRoute requiredRoles={['company', 'super_admin']}><CandidateDetail /></ProtectedRoute>} />
+        <Route path="/Candidates" element={<ProtectedRoute requiredRoles={['company', 'admin']}><Candidates /></ProtectedRoute>} />
+        <Route path="/CandidateDetail" element={<ProtectedRoute requiredRoles={['company', 'admin']}><CandidateDetail /></ProtectedRoute>} />
         <Route path="/SavedCandidates" element={<ProtectedRoute requiredRoles={['company']}><SavedCandidates /></ProtectedRoute>} />
         <Route path="/CandidateDashboard" element={<ProtectedRoute requiredRoles={['candidate']}><CandidateDashboard /></ProtectedRoute>} />
         <Route path="/EditCandidateProfile" element={<ProtectedRoute requiredRoles={['candidate']}><EditCandidateProfile /></ProtectedRoute>} />
@@ -70,7 +81,7 @@ const AuthenticatedApp = () => {
         <Route path="/EditCompanyProfile" element={<ProtectedRoute requiredRoles={['company']}><EditCompanyProfile /></ProtectedRoute>} />
         <Route path="/PostJob" element={<ProtectedRoute requiredRoles={['company']}><PostJob /></ProtectedRoute>} />
         <Route path="/ManageJobs" element={<ProtectedRoute requiredRoles={['company']}><ManageJobs /></ProtectedRoute>} />
-        <Route path="/AdminDashboard" element={<ProtectedRoute requiredRoles={['super_admin']}><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/AdminDashboard" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
         <Route path="/forbidden" element={<Forbidden />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>

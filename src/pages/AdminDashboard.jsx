@@ -3,184 +3,413 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, Briefcase, Building2, FileText, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import {
+  Users, Briefcase, Building2, FileText, CheckCircle, XCircle,
+  LayoutDashboard, ClipboardList, CreditCard, BarChart2, Search, Clock, ChevronRight
+} from 'lucide-react';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
-import StatusBadge from '../components/shared/StatusBadge';
 import { useToast } from '@/components/ui/use-toast';
+import { formatDistanceToNow } from 'date-fns';
+
+const SIDEBAR = [
+  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { key: 'approvals', label: 'Job Approvals', icon: ClipboardList },
+  { key: 'companies', label: 'Companies', icon: Building2 },
+  { key: 'candidates', label: 'Candidates', icon: Users },
+  { key: 'subscriptions', label: 'Subscriptions', icon: CreditCard },
+  { key: 'analytics', label: 'Analytics', icon: BarChart2 },
+];
+
+const approvalColors = {
+  pending: 'bg-yellow-100 text-yellow-700',
+  approved: 'bg-green-100 text-green-700',
+  rejected: 'bg-red-100 text-red-700',
+};
 
 export default function AdminDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [search, setSearch] = useState('');
 
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
-
-  const { data: users = [] } = useQuery({
-    queryKey: ['admin-users'],
-    queryFn: () => base44.entities.User.list('-created_date'),
-    enabled: user?.role === 'admin',
-  });
 
   const { data: candidates = [], isLoading: lc } = useQuery({
     queryKey: ['admin-candidates'],
     queryFn: () => base44.entities.CandidateProfile.list('-created_date'),
-    enabled: user?.role === 'admin',
+    enabled: !!user,
   });
 
   const { data: companies = [], isLoading: lco } = useQuery({
     queryKey: ['admin-companies'],
     queryFn: () => base44.entities.CompanyProfile.list('-created_date'),
-    enabled: user?.role === 'admin',
+    enabled: !!user,
   });
 
   const { data: jobs = [], isLoading: lj } = useQuery({
     queryKey: ['admin-jobs'],
     queryFn: () => base44.entities.Job.list('-created_date'),
-    enabled: user?.role === 'admin',
+    enabled: !!user,
   });
 
   const { data: applications = [] } = useQuery({
     queryKey: ['admin-applications'],
     queryFn: () => base44.entities.Application.list('-created_date'),
-    enabled: user?.role === 'admin',
+    enabled: !!user,
   });
 
-  const deleteJobMutation = useMutation({
-    mutationFn: (id) => base44.entities.Job.delete(id),
-    onSuccess: () => {
-      toast({ title: 'Job deleted' });
+  const approveMutation = useMutation({
+    mutationFn: ({ id, approval_status, admin_note }) =>
+      base44.entities.Job.update(id, { approval_status, admin_note }),
+    onSuccess: (_, vars) => {
+      toast({ title: vars.approval_status === 'approved' ? 'Job approved!' : 'Job rejected.' });
       queryClient.invalidateQueries({ queryKey: ['admin-jobs'] });
     },
   });
 
-  if (user?.role !== 'admin') {
-    return <div className="p-8 text-center text-slate-500">Access denied. Admin only.</div>;
-  }
+  if (!user) return <LoadingSpinner />;
 
-  const stats = [
-    { icon: Users, label: 'Candidates', value: candidates.length, color: 'bg-blue-50 text-blue-600' },
-    { icon: Building2, label: 'Companies', value: companies.length, color: 'bg-indigo-50 text-indigo-600' },
-    { icon: Briefcase, label: 'Jobs Posted', value: jobs.length, color: 'bg-emerald-50 text-emerald-600' },
-    { icon: FileText, label: 'Applications', value: applications.length, color: 'bg-amber-50 text-amber-600' },
+  const pendingJobs = jobs.filter(j => j.approval_status === 'pending');
+  const approvedJobs = jobs.filter(j => j.approval_status === 'approved');
+
+  const hiringRate = applications.length > 0
+    ? Math.round((applications.filter(a => a.status === 'hired').length / applications.length) * 100)
+    : 0;
+
+  const dashboardStats = [
+    { icon: Building2, label: 'Total Companies', value: companies.length, color: 'bg-indigo-50 text-indigo-600' },
+    { icon: Users, label: 'Total Candidates', value: candidates.length, color: 'bg-blue-50 text-blue-600' },
+    { icon: Clock, label: 'Pending Approvals', value: pendingJobs.length, color: 'bg-yellow-50 text-yellow-600' },
+    { icon: FileText, label: 'Monthly Applications', value: applications.length, color: 'bg-emerald-50 text-emerald-600' },
   ];
 
+  const filteredJobs = jobs.filter(j =>
+    !search || j.title?.toLowerCase().includes(search.toLowerCase()) ||
+    j.company_name?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const filteredCompanies = companies.filter(c =>
+    !search || c.company_name?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const filteredCandidates = candidates.filter(c =>
+    !search || c.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+    c.job_title?.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <div className="min-h-screen bg-slate-50 py-8">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <h1 className="text-2xl font-bold text-slate-900 mb-8">Admin Dashboard</h1>
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {stats.map(s => (
-            <Card key={s.label} className="p-5">
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${s.color}`}>
-                  <s.icon className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-slate-900">{s.value}</p>
-                  <p className="text-xs text-slate-500">{s.label}</p>
-                </div>
-              </div>
-            </Card>
-          ))}
+    <div className="flex h-screen bg-slate-50">
+      {/* Sidebar */}
+      <div className="w-60 flex-shrink-0 bg-white border-r flex flex-col">
+        <div className="p-5 border-b">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Super Admin</p>
+          <p className="font-bold text-slate-900 text-sm">{user?.full_name || user?.email}</p>
         </div>
+        <nav className="flex-1 p-3 space-y-1">
+          {SIDEBAR.map(item => (
+            <button
+              key={item.key}
+              onClick={() => { setActiveTab(item.key); setSearch(''); }}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                activeTab === item.key
+                  ? 'bg-indigo-50 text-indigo-700'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+              }`}
+            >
+              <item.icon className="w-4 h-4 flex-shrink-0" />
+              {item.label}
+              {item.key === 'approvals' && pendingJobs.length > 0 && (
+                <span className="ml-auto text-xs bg-yellow-400 text-white rounded-full px-1.5 py-0.5 font-bold">
+                  {pendingJobs.length}
+                </span>
+              )}
+            </button>
+          ))}
+        </nav>
+      </div>
 
-        <Tabs defaultValue="users">
-          <TabsList className="mb-6">
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="candidates">Candidates</TabsTrigger>
-            <TabsTrigger value="companies">Companies</TabsTrigger>
-            <TabsTrigger value="jobs">Jobs</TabsTrigger>
-            <TabsTrigger value="applications">Applications</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="users">
-            <Card className="p-4">
-              <div className="space-y-2">
-                {users.map(u => (
-                  <div key={u.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
-                    <div>
-                      <p className="font-medium text-slate-900 text-sm">{u.full_name || u.email}</p>
-                      <p className="text-xs text-slate-500">{u.email}</p>
+      {/* Main */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-6 max-w-5xl mx-auto">
+          {/* Dashboard */}
+          {activeTab === 'dashboard' && (
+            <>
+              <h1 className="text-2xl font-bold text-slate-900 mb-6">Admin Dashboard</h1>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                {dashboardStats.map(s => (
+                  <Card key={s.label} className="p-5">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${s.color}`}>
+                        <s.icon className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-slate-900">{s.value}</p>
+                        <p className="text-xs text-slate-500">{s.label}</p>
+                      </div>
                     </div>
-                    <span className="text-xs font-medium px-2 py-1 rounded bg-slate-200 text-slate-700">{u.role || 'candidate'}</span>
-                  </div>
+                  </Card>
                 ))}
               </div>
-            </Card>
-          </TabsContent>
 
-          <TabsContent value="candidates">
-            <Card className="p-4">
-              <div className="space-y-2">
-                {candidates.map(c => (
-                  <div key={c.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
-                    <div>
-                      <p className="font-medium text-slate-900 text-sm">{c.full_name}</p>
-                      <p className="text-xs text-slate-500">{c.job_title} · {c.location}</p>
-                    </div>
-                    <span className="text-xs text-slate-500">{c.visibility}</span>
+              <div className="grid lg:grid-cols-2 gap-6">
+                {/* Pending approvals preview */}
+                <Card className="p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="font-semibold text-slate-900">Pending Approvals</h2>
+                    <Button variant="ghost" size="sm" className="text-indigo-600" onClick={() => setActiveTab('approvals')}>
+                      View All <ChevronRight className="w-4 h-4 ml-1" />
+                    </Button>
                   </div>
+                  {pendingJobs.length === 0 ? (
+                    <p className="text-sm text-slate-400 text-center py-4">All caught up!</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {pendingJobs.slice(0, 4).map(j => (
+                        <div key={j.id} className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 border border-yellow-100">
+                          <div>
+                            <p className="text-sm font-medium text-slate-900">{j.title}</p>
+                            <p className="text-xs text-slate-500">{j.company_name}</p>
+                          </div>
+                          <div className="flex gap-1.5">
+                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-green-600 hover:bg-green-50"
+                              onClick={() => approveMutation.mutate({ id: j.id, approval_status: 'approved' })}>
+                              <CheckCircle className="w-4 h-4" />
+                            </Button>
+                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-red-500 hover:bg-red-50"
+                              onClick={() => approveMutation.mutate({ id: j.id, approval_status: 'rejected' })}>
+                              <XCircle className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Card>
+
+                {/* Analytics card */}
+                <Card className="p-5">
+                  <h2 className="font-semibold text-slate-900 mb-4">Analytics Summary</h2>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-slate-600">Active Jobs (approved)</span>
+                      <span className="font-bold text-slate-900">{approvedJobs.length}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-slate-600">Total Applications</span>
+                      <span className="font-bold text-slate-900">{applications.length}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-slate-600">Hiring Rate</span>
+                      <span className="font-bold text-emerald-600">{hiringRate}%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-slate-600">Rejected Jobs</span>
+                      <span className="font-bold text-red-500">{jobs.filter(j => j.approval_status === 'rejected').length}</span>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            </>
+          )}
+
+          {/* Job Approvals */}
+          {activeTab === 'approvals' && (
+            <>
+              <div className="flex items-center justify-between mb-6">
+                <h1 className="text-2xl font-bold text-slate-900">Job Approvals</h1>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input className="pl-9 w-60" placeholder="Search jobs..." value={search} onChange={e => setSearch(e.target.value)} />
+                </div>
+              </div>
+
+              {/* Tabs: pending / all */}
+              <div className="flex gap-4 mb-4">
+                {['all', 'pending', 'approved', 'rejected'].map(f => (
+                  <button key={f} onClick={() => setSearch('')}
+                    className="text-sm font-medium text-indigo-600 capitalize border-b-2 border-indigo-400 pb-0.5">
+                  </button>
                 ))}
               </div>
-            </Card>
-          </TabsContent>
 
-          <TabsContent value="companies">
-            <Card className="p-4">
-              <div className="space-y-2">
+              {lj ? <LoadingSpinner /> : (
+                <div className="space-y-3">
+                  {filteredJobs.length === 0 && <p className="text-sm text-slate-400 text-center py-8">No jobs found.</p>}
+                  {filteredJobs.map(job => (
+                    <Card key={job.id} className="p-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-semibold text-slate-900">{job.title}</p>
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${approvalColors[job.approval_status || 'pending']}`}>
+                              {job.approval_status || 'pending'}
+                            </span>
+                          </div>
+                          <p className="text-sm text-slate-500 mt-0.5">{job.company_name} · {job.location || job.work_mode}</p>
+                          {job.created_date && (
+                            <p className="text-xs text-slate-400 mt-1">Posted {formatDistanceToNow(new Date(job.created_date), { addSuffix: true })}</p>
+                          )}
+                          {job.admin_note && (
+                            <p className="text-xs text-red-500 mt-1">Note: {job.admin_note}</p>
+                          )}
+                        </div>
+                        {(job.approval_status === 'pending' || job.approval_status === undefined) && (
+                          <div className="flex gap-2 flex-shrink-0">
+                            <Button size="sm" className="bg-green-600 hover:bg-green-700 gap-1.5"
+                              onClick={() => approveMutation.mutate({ id: job.id, approval_status: 'approved' })}
+                              disabled={approveMutation.isPending}>
+                              <CheckCircle className="w-4 h-4" /> Approve
+                            </Button>
+                            <Button size="sm" variant="outline" className="text-red-500 border-red-200 hover:bg-red-50 gap-1.5"
+                              onClick={() => approveMutation.mutate({ id: job.id, approval_status: 'rejected' })}
+                              disabled={approveMutation.isPending}>
+                              <XCircle className="w-4 h-4" /> Reject
+                            </Button>
+                          </div>
+                        )}
+                        {job.approval_status === 'approved' && (
+                          <Button size="sm" variant="outline" className="text-red-500 border-red-200 hover:bg-red-50 gap-1.5 flex-shrink-0"
+                            onClick={() => approveMutation.mutate({ id: job.id, approval_status: 'rejected' })}
+                            disabled={approveMutation.isPending}>
+                            <XCircle className="w-4 h-4" /> Revoke
+                          </Button>
+                        )}
+                        {job.approval_status === 'rejected' && (
+                          <Button size="sm" className="bg-green-600 hover:bg-green-700 gap-1.5 flex-shrink-0"
+                            onClick={() => approveMutation.mutate({ id: job.id, approval_status: 'approved' })}
+                            disabled={approveMutation.isPending}>
+                            <CheckCircle className="w-4 h-4" /> Re-approve
+                          </Button>
+                        )}
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Companies */}
+          {activeTab === 'companies' && (
+            <>
+              <div className="flex items-center justify-between mb-6">
+                <h1 className="text-2xl font-bold text-slate-900">Companies ({companies.length})</h1>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input className="pl-9 w-60" placeholder="Search companies..." value={search} onChange={e => setSearch(e.target.value)} />
+                </div>
+              </div>
+              {lco ? <LoadingSpinner /> : (
+                <div className="space-y-3">
+                  {filteredCompanies.map(c => (
+                    <Card key={c.id} className="p-4 flex items-center gap-4">
+                      {c.logo_url ? (
+                        <img src={c.logo_url} alt="" className="w-10 h-10 rounded-lg object-cover border" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center"><Building2 className="w-5 h-5 text-indigo-400" /></div>
+                      )}
+                      <div className="flex-1">
+                        <p className="font-semibold text-slate-900">{c.company_name}</p>
+                        <p className="text-xs text-slate-500">{c.industry} · {c.company_size} employees · {c.headquarters}</p>
+                      </div>
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${c.subscription_plan === 'pro' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>
+                        {c.subscription_plan || 'free'}
+                      </span>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Candidates */}
+          {activeTab === 'candidates' && (
+            <>
+              <div className="flex items-center justify-between mb-6">
+                <h1 className="text-2xl font-bold text-slate-900">Candidates ({candidates.length})</h1>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input className="pl-9 w-60" placeholder="Search candidates..." value={search} onChange={e => setSearch(e.target.value)} />
+                </div>
+              </div>
+              {lc ? <LoadingSpinner /> : (
+                <div className="space-y-3">
+                  {filteredCandidates.map(c => (
+                    <Card key={c.id} className="p-4 flex items-center gap-4">
+                      {c.avatar_url ? (
+                        <img src={c.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover border" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center"><Users className="w-5 h-5 text-blue-400" /></div>
+                      )}
+                      <div className="flex-1">
+                        <p className="font-semibold text-slate-900">{c.full_name}</p>
+                        <p className="text-xs text-slate-500">{c.job_title} · {c.location} · {c.years_of_experience ? `${c.years_of_experience} yrs exp` : ''}</p>
+                      </div>
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${c.open_to_work ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                        {c.open_to_work ? 'Open to Work' : 'Not looking'}
+                      </span>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Subscriptions */}
+          {activeTab === 'subscriptions' && (
+            <>
+              <h1 className="text-2xl font-bold text-slate-900 mb-6">Subscriptions</h1>
+              <div className="grid sm:grid-cols-2 gap-4 mb-6">
+                <Card className="p-5">
+                  <p className="text-3xl font-bold text-slate-900">{companies.filter(c => c.subscription_plan === 'pro').length}</p>
+                  <p className="text-sm text-slate-500 mt-1">Pro Plan Companies</p>
+                </Card>
+                <Card className="p-5">
+                  <p className="text-3xl font-bold text-slate-900">{companies.filter(c => !c.subscription_plan || c.subscription_plan === 'free').length}</p>
+                  <p className="text-sm text-slate-500 mt-1">Free Plan Companies</p>
+                </Card>
+              </div>
+              <div className="space-y-3">
                 {companies.map(c => (
-                  <div key={c.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
-                    <div>
-                      <p className="font-medium text-slate-900 text-sm">{c.company_name}</p>
-                      <p className="text-xs text-slate-500">{c.industry} · {c.company_size}</p>
+                  <Card key={c.id} className="p-4 flex items-center gap-3">
+                    <div className="flex-1">
+                      <p className="font-medium text-slate-900">{c.company_name}</p>
+                      <p className="text-xs text-slate-500">{c.recruiter_email}</p>
                     </div>
-                    <span className="text-xs font-medium px-2 py-1 rounded bg-indigo-50 text-indigo-700">{c.subscription_plan}</span>
-                  </div>
+                    <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${c.subscription_plan === 'pro' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>
+                      {c.subscription_plan || 'free'}
+                    </span>
+                  </Card>
                 ))}
               </div>
-            </Card>
-          </TabsContent>
+            </>
+          )}
 
-          <TabsContent value="jobs">
-            <Card className="p-4">
-              <div className="space-y-2">
-                {jobs.map(j => (
-                  <div key={j.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
-                    <div>
-                      <p className="font-medium text-slate-900 text-sm">{j.title}</p>
-                      <p className="text-xs text-slate-500">{j.company_name} · {j.location}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <StatusBadge status={j.status} />
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => deleteJobMutation.mutate(j.id)}>
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </div>
+          {/* Analytics */}
+          {activeTab === 'analytics' && (
+            <>
+              <h1 className="text-2xl font-bold text-slate-900 mb-6">Analytics</h1>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                {[
+                  { label: 'Total Companies', value: companies.length, color: 'bg-indigo-50 text-indigo-700' },
+                  { label: 'Total Candidates', value: candidates.length, color: 'bg-blue-50 text-blue-700' },
+                  { label: 'Pending Approvals', value: pendingJobs.length, color: 'bg-yellow-50 text-yellow-700' },
+                  { label: 'Total Jobs Posted', value: jobs.length, color: 'bg-slate-50 text-slate-700' },
+                  { label: 'Total Applications', value: applications.length, color: 'bg-emerald-50 text-emerald-700' },
+                  { label: 'Hiring Rate', value: `${hiringRate}%`, color: 'bg-green-50 text-green-700' },
+                ].map(s => (
+                  <Card key={s.label} className="p-5">
+                    <p className={`text-3xl font-bold ${s.color.split(' ')[1]}`}>{s.value}</p>
+                    <p className="text-sm text-slate-500 mt-1">{s.label}</p>
+                  </Card>
                 ))}
               </div>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="applications">
-            <Card className="p-4">
-              <div className="space-y-2">
-                {applications.map(a => (
-                  <div key={a.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
-                    <div>
-                      <p className="font-medium text-slate-900 text-sm">{a.candidate_name}</p>
-                      <p className="text-xs text-slate-500">Applied to {a.job_title} at {a.company_name}</p>
-                    </div>
-                    <StatusBadge status={a.status} />
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </TabsContent>
-        </Tabs>
+            </>
+          )}
+        </div>
       </div>
     </div>
-  ); 
+  );
 }

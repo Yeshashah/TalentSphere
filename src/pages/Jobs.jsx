@@ -65,7 +65,7 @@ export default function Jobs() {
 
   const { data: jobs = [], isLoading } = useQuery({
     queryKey: ['jobs'],
-    queryFn: () => base44.entities.Job.filter({ status: 'open' }, '-created_date'),
+    queryFn: () => base44.entities.Job.filter({ status: 'open', approval_status: 'approved' }, '-created_date'),
   });
 
   // Use Supabase data if available, otherwise use Base44 jobs

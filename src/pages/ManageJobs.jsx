@@ -75,7 +75,11 @@ export default function ManageJobs() {
                       <p className="text-xs text-slate-500 mt-1">{applications.filter(a => a.job_id === job.id).length} applications</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <StatusBadge status={job.status} />
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                        job.approval_status === 'approved' ? 'bg-green-100 text-green-700' :
+                        job.approval_status === 'rejected' ? 'bg-red-100 text-red-700' :
+                        'bg-yellow-100 text-yellow-700'
+                      }`}>{job.approval_status || 'pending'}</span>
                       <Link to={`/PostJob?id=${job.id}`} onClick={e => e.stopPropagation()}>
                         <Button variant="ghost" size="icon" className="h-8 w-8"><Edit className="w-3.5 h-3.5" /></Button>
                       </Link>

@@ -14,7 +14,7 @@ import { Save } from 'lucide-react';
 export default function PostJob() {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ skills_required: [], status: 'open' });
+  const [form, setForm] = useState({ skills_required: [], status: 'open', approval_status: 'pending' });
   const [skillInput, setSkillInput] = useState('');
 
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
@@ -52,8 +52,10 @@ export default function PostJob() {
         company_name: company?.company_name || '',
         company_logo: company?.logo_url || '',
       };
+      // New jobs always start as pending approval
+      if (!payload.approval_status) payload.approval_status = 'pending';
       if (jobId && existingJob) return base44.entities.Job.update(existingJob.id, payload);
-      return base44.entities.Job.create(payload);
+      return base44.entities.Job.create({ ...payload, approval_status: 'pending' });
     },
     onSuccess: () => {
       toast({ title: jobId ? 'Job updated!' : 'Job posted!' });

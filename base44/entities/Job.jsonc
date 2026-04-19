@@ -106,6 +106,20 @@
       ],
       "default": "open"
     },
+    "approval_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "Set by Super Admin. Only approved jobs are visible to candidates."
+    },
+    "admin_note": {
+      "type": "string",
+      "description": "Optional note from admin when rejecting a job"
+    },
     "applications_count": {
       "type": "number",
       "default": 0

@@ -15,13 +15,17 @@ export default function RoleSelect() {
     if (!selected) return;
     setLoading(true);
     try {
-      await base44.auth.updateMe({ role: selected, user_type_setup_complete: true });
+      // Check current user role first — never overwrite admin role
+      const me = await base44.auth.me();
+      if (me?.role === 'admin') {
+        navigate('/AdminDashboard');
+        return;
+      }
+      await base44.auth.updateMe({ role: selected });
       if (selected === 'candidate') {
         navigate('/EditCandidateProfile');
       } else if (selected === 'company') {
         navigate('/EditCompanyProfile');
-      } else {
-        navigate(getRoleRedirect(selected));
       }
     } catch (error) {
       console.error('Error setting role:', error);

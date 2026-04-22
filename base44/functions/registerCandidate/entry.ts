@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   try {
@@ -7,7 +7,6 @@ Deno.serve(async (req) => {
 
     const {
       email,
-      password,
       full_name,
       phone,
       job_title,
@@ -21,12 +20,8 @@ Deno.serve(async (req) => {
     } = body;
 
     // Validation
-    if (!email || !password || !full_name || !phone) {
+    if (!email || !full_name || !phone) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
-    }
-
-    if (password.length < 8) {
-      return Response.json({ error: 'Password must be at least 8 characters' }, { status: 400 });
     }
 
     // Check if email already exists
@@ -35,12 +30,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'This email is already registered' }, { status: 400 });
     }
 
-    // Create User record (Base44 User entity)
-    const user = await base44.asServiceRole.entities.User.create({
-      email,
-      full_name,
-      role: 'candidate',
-    });
+    // Invite the user via Base44 auth (this creates the actual auth account)
+    await base44.asServiceRole.users.inviteUser(email, 'candidate');
+
+    // Wait briefly for the user to be created in auth
+    await new Promise(r => setTimeout(r, 500));
+
+    // Update the user's full_name
+    const users = await base44.asServiceRole.entities.User.filter({ email });
+    if (users.length > 0) {
+      await base44.asServiceRole.entities.User.update(users[0].id, { full_name });
+    }
 
     // Create CandidateProfile record
     await base44.asServiceRole.entities.CandidateProfile.create({
@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
       open_to_work: open_to_work || false,
     });
 
-    return Response.json({ success: true, user_id: user.id });
+    return Response.json({ success: true });
   } catch (error) {
     console.error('Registration error:', error);
     return Response.json({ error: error.message || 'Registration failed' }, { status: 500 });

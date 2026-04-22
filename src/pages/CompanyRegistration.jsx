@@ -16,7 +16,6 @@ export default function CompanyRegistration() {
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
     company_name: '',
     hq_country: '',
     year_founded: new Date().getFullYear(),
@@ -49,12 +48,8 @@ export default function CompanyRegistration() {
   };
 
   const validateForm = () => {
-    if (!formData.email || !formData.password || !formData.company_name || !formData.hq_country) {
+    if (!formData.email || !formData.company_name || !formData.hq_country) {
       setError('Please fill all required fields');
-      return false;
-    }
-    if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters');
       return false;
     }
     if (formData.year_founded > new Date().getFullYear()) {
@@ -74,7 +69,6 @@ export default function CompanyRegistration() {
     try {
       const response = await base44.functions.invoke('registerCompany', {
         email: formData.email,
-        password: formData.password,
         company_name: formData.company_name,
         hq_country: formData.hq_country,
         year_founded: parseInt(formData.year_founded),
@@ -90,7 +84,8 @@ export default function CompanyRegistration() {
       });
 
       if (response.data?.success) {
-        navigate('/CompanyDashboard');
+        alert('Registration successful! You will receive an email invitation to set your password. Please check your email and log in.');
+        navigate('/Home');
       } else {
         setError(response.data?.error || 'Registration failed');
       }
@@ -122,30 +117,18 @@ export default function CompanyRegistration() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email & Password */}
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-900 mb-2">Email ID *</label>
-                <Input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="company@email.com"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-900 mb-2">Password *</label>
-                <Input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  placeholder="Min 8 characters"
-                  required
-                />
-              </div>
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium text-slate-900 mb-2">Email ID *</label>
+              <Input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                placeholder="company@email.com"
+                required
+              />
+              <p className="text-xs text-slate-500 mt-1">You'll receive an email invitation to set your password.</p>
             </div>
 
             {/* Company Info */}

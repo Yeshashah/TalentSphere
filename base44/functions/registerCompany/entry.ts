@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   try {
@@ -7,7 +7,6 @@ Deno.serve(async (req) => {
 
     const {
       email,
-      password,
       company_name,
       hq_country,
       year_founded,
@@ -23,12 +22,8 @@ Deno.serve(async (req) => {
     } = body;
 
     // Validation
-    if (!email || !password || !company_name || !hq_country) {
+    if (!email || !company_name || !hq_country) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
-    }
-
-    if (password.length < 8) {
-      return Response.json({ error: 'Password must be at least 8 characters' }, { status: 400 });
     }
 
     // Check if email already exists
@@ -37,12 +32,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'This email is already registered' }, { status: 400 });
     }
 
-    // Create User record
-    const user = await base44.asServiceRole.entities.User.create({
-      email,
-      full_name: company_name,
-      role: 'company',
-    });
+    // Invite the user via Base44 auth (this creates the actual auth account with role 'company')
+    await base44.asServiceRole.users.inviteUser(email, 'company');
+
+    // Wait briefly for the user to be created in auth
+    await new Promise(r => setTimeout(r, 500));
+
+    // Update the user's full_name to company name
+    const users = await base44.asServiceRole.entities.User.filter({ email });
+    if (users.length > 0) {
+      await base44.asServiceRole.entities.User.update(users[0].id, { full_name: company_name });
+    }
 
     // Create CompanyProfile record
     await base44.asServiceRole.entities.CompanyProfile.create({
@@ -55,13 +55,13 @@ Deno.serve(async (req) => {
       linkedin_profile_url: linkedin_profile_url || '',
       logo_url: linkedin_logo_url || '',
       website: company_website || '',
-      industry: linkedin_industries.join(', ') || '',
+      industry: Array.isArray(linkedin_industries) ? linkedin_industries.join(', ') : '',
       recent_job_openings_title: recent_job_openings_title || '',
       jobs_posted_count: recent_job_openings || 0,
       description: all_office_addresses || '',
     });
 
-    return Response.json({ success: true, user_id: user.id });
+    return Response.json({ success: true });
   } catch (error) {
     console.error('Registration error:', error);
     return Response.json({ error: error.message || 'Registration failed' }, { status: 500 });

@@ -32,11 +32,12 @@ import AdminDashboard from './pages/AdminDashboard';
 
 // Redirect users to their role-specific dashboard after login
 function RoleRedirect() {
-  const { user } = useAuth();
+  const { user, isLoadingAuth } = useAuth();
+  if (isLoadingAuth) return null;
   if (!user) return <Navigate to="/Home" replace />;
+  if (user.role === 'admin') return <Navigate to="/AdminDashboard" replace />;
   if (user.role === 'candidate') return <Navigate to="/CandidateDashboard" replace />;
   if (user.role === 'company') return <Navigate to="/CompanyDashboard" replace />;
-  if (user.role === 'admin') return <Navigate to="/AdminDashboard" replace />;
   return <Navigate to="/RoleSelect" replace />;
 }
 

@@ -18,39 +18,8 @@ export default function Messages() {
   const [selectedConv, setSelectedConv] = useState(null);
   const [newMsg, setNewMsg] = useState('');
   const [newRecipient, setNewRecipient] = useState(toParam || '');
-  const [supabaseMessages, setSupabaseMessages] = useState(null);
-  const [fetchingSupabase, setFetchingSupabase] = useState(false);
   const msgEndRef = useRef(null);
   const queryClient = useQueryClient();
-
-  // Fetch from Supabase on page load
-  useEffect(() => {
-    const fetchSupabaseData = async () => {
-      setFetchingSupabase(true);
-      try {
-        const response = await base44.functions.invoke('fetchMessages', {});
-        const messages = response.data?.messages || [];
-        // Transform Supabase messages to match expected format
-        const transformedMessages = messages.map(msg => ({
-          id: msg.id,
-          sender_email: msg.sender_email,
-          receiver_email: msg.receiver_email,
-          sender_name: msg.sender_name || '',
-          content: msg.content,
-          read: msg.read || false,
-          conversation_id: msg.conversation_id,
-          created_date: msg.created_at,
-        }));
-        setSupabaseMessages(transformedMessages);
-      } catch (error) {
-        console.error('Error fetching messages from Supabase:', error);
-        setSupabaseMessages([]);
-      } finally {
-        setFetchingSupabase(false);
-      }
-    };
-    fetchSupabaseData();
-  }, []);
 
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
 
@@ -82,9 +51,8 @@ export default function Messages() {
     refetchInterval: 5000,
   });
 
-  // Use Supabase data if available, otherwise use Base44 messages
-  const allMessages = supabaseMessages && supabaseMessages.length > 0 ? supabaseMessages : dbMessages;
-  const isLoading = isLoadingDb || fetchingSupabase;
+  const allMessages = dbMessages;
+  const isLoading = isLoadingDb;
 
   // Group into conversations
   const conversations = React.useMemo(() => {

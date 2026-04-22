@@ -1,76 +1,36 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Search, Briefcase, MapPin, Clock, Building2, Bookmark } from 'lucide-react';
+import { Search, Briefcase, MapPin, Building2, Bookmark } from 'lucide-react';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
 import EmptyState from '../components/shared/EmptyState';
 import JobDetailPanel from '../components/jobs/JobDetailPanel';
 import JobFilters, { salaryRanges } from '../components/jobs/JobFilters.jsx';
 import ApplicationTracker from '../components/jobs/ApplicationTracker';
-import { formatDistanceToNow } from 'date-fns';
 
-const typeLabels = { full_time: 'Full-time', part_time: 'Part-time', contract: 'Contract', freelance: 'Freelance', internship: 'Internship' };
 const modeLabels = { remote: 'Remote', hybrid: 'Hybrid', onsite: 'Onsite' };
 
 export default function Jobs() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState('jobs'); // jobs | saved | applied | track
+  const [activeTab, setActiveTab] = useState('jobs');
   const [filters, setFilters] = useState({});
   const [selectedJob, setSelectedJob] = useState(null);
-  const [supabaseJobs, setSupabaseJobs] = useState(null);
-  const [fetchingSupabase, setFetchingSupabase] = useState(false);
-
-  // Fetch from Supabase on page load
-  useEffect(() => {
-    const fetchSupabaseData = async () => {
-      setFetchingSupabase(true);
-      try {
-        const response = await base44.functions.invoke('fetchCompanyProfiles', {});
-        const profiles = response.data?.profiles || [];
-        // Transform Supabase company profiles to job-like format
-        const transformedJobs = profiles.map(profile => ({
-          id: profile.id,
-          title: `Hiring at ${profile.company_name}`,
-          company_name: profile.company_name,
-          company_logo: profile.logo_url,
-          location: profile.headquarters,
-          work_mode: 'remote',
-          employment_type: 'full_time',
-          description: profile.description || `Join ${profile.company_name} - a company in the ${profile.industry} industry.`,
-          company_email: profile.recruiter_email,
-          skills_required: [],
-          created_date: profile.created_at,
-        }));
-        setSupabaseJobs(transformedJobs);
-      } catch (error) {
-        console.error('Error fetching from Supabase:', error);
-        setSupabaseJobs([]);
-      } finally {
-        setFetchingSupabase(false);
-      }
-    };
-    fetchSupabaseData();
-  }, []);
 
   const { data: user } = useQuery({
     queryKey: ['me'],
     queryFn: () => base44.auth.me().catch(() => null),
   });
 
-  const { data: jobs = [], isLoading } = useQuery({
+  const { data: jobs = [], isLoading: displayLoading } = useQuery({
     queryKey: ['jobs'],
     queryFn: () => base44.entities.Job.filter({ status: 'open', approval_status: 'approved' }, '-created_date'),
   });
 
-  // Use Supabase data if available, otherwise use Base44 jobs
-  const displayJobs = supabaseJobs && supabaseJobs.length > 0 ? supabaseJobs : jobs;
-  const displayLoading = isLoading || fetchingSupabase;
+  const displayJobs = jobs;
 
   const { data: savedItems = [] } = useQuery({
     queryKey: ['saved-jobs', user?.email],

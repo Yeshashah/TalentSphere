@@ -20,45 +20,7 @@ export default function Candidates() {
   const [filters, setFilters] = useState({});
   const [page, setPage] = useState(0);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
-  const [supabaseCandidates, setSupabaseCandidates] = useState(null);
-  const [fetchingSupabase, setFetchingSupabase] = useState(false);
   const pageSize = 20;
-
-  // Fetch from Supabase on page load
-  useEffect(() => {
-    const fetchSupabaseData = async () => {
-      setFetchingSupabase(true);
-      try {
-        const response = await base44.functions.invoke('fetchCandidateProfiles', {});
-        const profiles = response.data?.candidates || [];
-        // Transform Supabase candidate profiles to match expected format
-        const transformedCandidates = profiles.map(profile => ({
-          id: profile.id,
-          full_name: profile.full_name || 'Unknown',
-          job_title: profile.job_title || 'Job Title Not Specified',
-          location: profile.location || '',
-          avatar_url: profile.avatar_url || '',
-          skills: profile.skills || [],
-          years_of_experience: profile.years_of_experience || 0,
-          bio: profile.bio || '',
-          tech_stack: profile.tech_stack || [],
-          education_degree: profile.education_degree || '',
-          education_university: profile.education_university || '',
-          linkedin: profile.linkedin || '',
-          portfolio: profile.portfolio || '',
-          resume_url: profile.resume_url || '',
-          expected_salary: profile.expected_salary || 0,
-        }));
-        setSupabaseCandidates(transformedCandidates);
-      } catch (error) {
-        console.error('Error fetching candidates from Supabase:', error);
-        setSupabaseCandidates([]);
-      } finally {
-        setFetchingSupabase(false);
-      }
-    };
-    fetchSupabaseData();
-  }, []);
 
   const { data: user } = useQuery({
     queryKey: ['me'],
@@ -72,16 +34,10 @@ export default function Candidates() {
   });
   const savedCandidateIds = new Set(savedItems.map(s => s.item_id));
 
-  const { data: dbCandidates = [], isLoading: isLoadingDb } = useQuery({
+  const { data: candidates = [], isLoading } = useQuery({
     queryKey: ['candidates-db', page],
-    queryFn: async () => {
-      return await base44.entities.CandidateProfile.filter({}, '-created_date', pageSize, page * pageSize);
-    },
+    queryFn: () => base44.entities.CandidateProfile.filter({}, '-created_date', pageSize, page * pageSize),
   });
-
-  // Use Supabase data if available, otherwise use Base44 candidates
-  const candidates = supabaseCandidates && supabaseCandidates.length > 0 ? supabaseCandidates : dbCandidates;
-  const isLoading = isLoadingDb || fetchingSupabase;
 
   const filtered = useMemo(() => {
     let list = Array.isArray(candidates) ? candidates : [];

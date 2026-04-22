@@ -1,4 +1,6 @@
+import React from 'react';
 import { Toaster } from "@/components/ui/toaster"
+import { base44 } from '@/api/base44Client';
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
@@ -32,8 +34,18 @@ import AdminDashboard from './pages/AdminDashboard';
 
 // Redirect users to their role-specific dashboard after login
 function RoleRedirect() {
-  const { user, isLoadingAuth } = useAuth();
-  if (isLoadingAuth) return null;
+  const { isLoadingAuth } = useAuth();
+  const [user, setUser] = React.useState(undefined);
+
+  React.useEffect(() => {
+    base44.auth.me().then(setUser).catch(() => setUser(null));
+  }, []);
+
+  if (isLoadingAuth || user === undefined) return (
+    <div className="fixed inset-0 flex items-center justify-center">
+      <div className="w-8 h-8 border-4 border-slate-200 border-t-indigo-500 rounded-full animate-spin"></div>
+    </div>
+  );
   if (!user) return <Navigate to="/Home" replace />;
   if (user.role === 'admin') return <Navigate to="/AdminDashboard" replace />;
   if (user.role === 'candidate') return <Navigate to="/CandidateDashboard" replace />;

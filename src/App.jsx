@@ -90,7 +90,7 @@ const AuthenticatedApp = () => {
     </Routes>
   );
 };
-
+ 
 function App() {
   return (
     <QueryClientProvider client={queryClientInstance}>

@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu, Briefcase, Users, LogOut, LayoutDashboard, MessageSquare } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import NotificationBell from '@/components/shared/NotificationBell';
 
 export default function Navbar({ user }) {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const role = user?.role;
 
   const publicLinks = [
@@ -79,13 +81,13 @@ export default function Navbar({ user }) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => base44.auth.logout()}
-                className="text-slate-500"
+                onClick={logout}
+                className="text-slate-500 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors"
               >
                 <LogOut className="w-4 h-4" />
               </Button>
             ) : (
-              <Button size="sm" onClick={() => base44.auth.redirectToLogin()}>
+              <Button size="sm" onClick={() => navigate('/login')} className="bg-slate-900 text-white hover:bg-indigo-600 rounded-xl transition-all shadow-md">
                 Get Started
               </Button>
             )}
@@ -115,11 +117,11 @@ export default function Navbar({ user }) {
                 ))}
                 <div className="border-t my-2" />
                 {user ? (
-                  <Button variant="ghost" onClick={() => { base44.auth.logout(); setOpen(false); }}>
+                  <Button variant="ghost" onClick={() => { logout(); setOpen(false); }}>
                     <LogOut className="w-4 h-4 mr-2" /> Sign Out
                   </Button>
                 ) : (
-                  <Button onClick={() => { base44.auth.redirectToLogin(); setOpen(false); }}>
+                  <Button onClick={() => { navigate('/login'); setOpen(false); }}>
                     Get Started
                   </Button>
                 )}

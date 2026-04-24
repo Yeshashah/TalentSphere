@@ -15,10 +15,19 @@ const modeLabels = { remote: 'Remote', hybrid: 'Hybrid', onsite: 'Onsite' };
 
 export default function Jobs() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('jobs');
   const [filters, setFilters] = useState({});
   const [selectedJob, setSelectedJob] = useState(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab');
+    if (tabParam && ['jobs', 'saved', 'applied', 'track'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [location.search]);
 
   const { data: user } = useQuery({
     queryKey: ['me'],
@@ -83,15 +92,22 @@ export default function Jobs() {
     });
   }, [displayJobs, search, activeTab, filters, savedJobIds, appliedJobIds]);
 
-  // Select first job when list changes
+  // Select job based on URL or defaults
   useEffect(() => {
-    if (filteredJobs.length > 0 && !selectedJob) {
+    const params = new URLSearchParams(location.search);
+    const jobIdParam = params.get('jobId');
+
+    if (jobIdParam) {
+      const job = displayJobs.find(j => j.id === jobIdParam);
+      if (job) setSelectedJob(job);
+    } else if (filteredJobs.length > 0 && !selectedJob) {
       setSelectedJob(filteredJobs[0]);
     }
-    if (filteredJobs.length > 0 && selectedJob && !filteredJobs.find(j => j.id === selectedJob.id)) {
+
+    if (!jobIdParam && filteredJobs.length > 0 && selectedJob && !filteredJobs.find(j => j.id === selectedJob.id)) {
       setSelectedJob(filteredJobs[0]);
     }
-  }, [filteredJobs]);
+  }, [filteredJobs, location.search, displayJobs, selectedJob]);
 
 
 
@@ -156,7 +172,7 @@ export default function Jobs() {
               {filteredJobs.map(job => (
                 <button
                   key={job.id}
-                  onClick={() => navigate(`/JobDetail?id=${job.id}`)}
+                  onClick={() => setSelectedJob(job)}
                   className={`w-full text-left p-4 border-b transition-colors hover:bg-slate-50 ${selectedJob?.id === job.id ? 'bg-indigo-50 border-l-2 border-l-indigo-500' : ''}`}
                 >
                   <div className="flex items-start gap-3">
@@ -194,6 +210,8 @@ export default function Jobs() {
         <div className="flex-1 overflow-hidden bg-white">
           {activeTab === 'track' ? (
             <ApplicationTracker />
+          ) : activeTab === 'applied' && selectedJob ? (
+            <ApplicationTracker jobId={selectedJob.id} />
           ) : selectedJob ? (
             <JobDetailPanel key={selectedJob.id} job={selectedJob} />
           ) : (

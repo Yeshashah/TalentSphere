@@ -1,154 +1,114 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
-import { appParams } from '@/lib/app-params';
-import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
+/**
+ * AuthContext.jsx
+ * ─────────────────────────────────────────────
+ * Provides authentication state using the local client.
+ * Exposes the same context shape as the original base44 version
+ * so that all consumers (ProtectedRoute, pages, Navbar, etc.)
+ * continue to work without modification.
+ */
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import { supabaseWrapper as localClient } from '@/api/supabaseWrapper';
+import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
-  const [authError, setAuthError] = useState(null);
-  const [appPublicSettings, setAppPublicSettings] = useState(null); // Contains only { id, public_settings }
+/**
+ * Inner provider that needs access to useNavigate.
+ * This must be rendered *inside* <BrowserRouter>.
+ */
+function AuthProviderInner({ children }) {
+  const navigate = useNavigate();
 
+  const [user, setUser]                           = useState(null);
+  const [isAuthenticated, setIsAuthenticated]     = useState(false);
+  const [isLoadingAuth, setIsLoadingAuth]         = useState(true);
+  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(false);
+  const [authError, setAuthError]                 = useState(null);
+  const appPublicSettings                         = null; // unused locally
+
+  // ── bootstrap ────────────────────────────────
   useEffect(() => {
     checkAppState();
-  }, []);
 
-  const checkAppState = async () => {
-    try {
-      setIsLoadingPublicSettings(true);
-      setAuthError(null);
-      
-      // First, check app public settings (with token if available)
-      // This will tell us if auth is required, user not registered, etc.
-      const appClient = createAxiosClient({
-        baseURL: `/api/apps/public`,
-        headers: {
-          'X-App-Id': appParams.appId
-        },
-        token: appParams.token, // Include token if available
-        interceptResponses: true
-      });
-      
-      try {
-        const publicSettings = await appClient.get(`/prod/public-settings/by-id/${appParams.appId}`);
-        setAppPublicSettings(publicSettings);
-        
-        // If we got the app public settings successfully, check if user is authenticated
-        if (appParams.token) {
-          await checkUserAuth();
-        } else {
-          setIsLoadingAuth(false);
-          setIsAuthenticated(false);
-        }
-        setIsLoadingPublicSettings(false);
-      } catch (appError) {
-        console.error('App state check failed:', appError);
-        
-        // Handle app-level errors
-        if (appError.status === 403 && appError.data?.extra_data?.reason) {
-          const reason = appError.data.extra_data.reason;
-          if (reason === 'auth_required') {
-            setAuthError({
-              type: 'auth_required',
-              message: 'Authentication required'
-            });
-          } else if (reason === 'user_not_registered') {
-            setAuthError({
-              type: 'user_not_registered',
-              message: 'User not registered for this app'
-            });
-          } else {
-            setAuthError({
-              type: reason,
-              message: appError.message
-            });
-          }
-        } else {
-          setAuthError({
-            type: 'unknown',
-            message: appError.message || 'Failed to load app'
-          });
-        }
-        setIsLoadingPublicSettings(false);
-        setIsLoadingAuth(false);
-      }
-    } catch (error) {
-      console.error('Unexpected error:', error);
-      setAuthError({
-        type: 'unknown',
-        message: error.message || 'An unexpected error occurred'
-      });
-      setIsLoadingPublicSettings(false);
-      setIsLoadingAuth(false);
-    }
-  };
+    // Listen for redirectToLogin events emitted by localClient.auth.redirectToLogin()
+    const handler = () => navigate('/login');
+    window.addEventListener('localAuth:redirectToLogin', handler);
+    return () => window.removeEventListener('localAuth:redirectToLogin', handler);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const checkUserAuth = async () => {
+  const checkAppState = useCallback(async () => {
+    setIsLoadingAuth(true);
+    setAuthError(null);
     try {
-      // Now check if the user is authenticated
-      setIsLoadingAuth(true);
-      const currentUser = await base44.auth.me();
+      const currentUser = await localClient.auth.me();
       setUser(currentUser);
       setIsAuthenticated(true);
-      setIsLoadingAuth(false);
-    } catch (error) {
-      console.error('User auth check failed:', error);
-      setIsLoadingAuth(false);
+    } catch (_) {
+      // Not logged in — that's fine; many pages are public
+      setUser(null);
       setIsAuthenticated(false);
-      
-      // If user auth fails, it might be an expired token
-      if (error.status === 401 || error.status === 403) {
-        setAuthError({
-          type: 'auth_required',
-          message: 'Authentication required'
-        });
-      }
+    } finally {
+      setIsLoadingAuth(false);
+    }
+  }, []);
+
+  // ── actions ──────────────────────────────────
+
+  const login = async (email, password) => {
+    setIsLoadingAuth(true);
+    setAuthError(null);
+    try {
+      const loggedInUser = await localClient.auth.login({ email, password });
+      setUser(loggedInUser);
+      setIsAuthenticated(true);
+      return loggedInUser;
+    } catch (err) {
+      setAuthError({ type: 'login_failed', message: err.message });
+      throw err;
+    } finally {
+      setIsLoadingAuth(false);
     }
   };
 
-  const logout = (shouldRedirect = true) => {
+  const logout = () => {
+    localClient.auth.logout();
     setUser(null);
     setIsAuthenticated(false);
-    
-    if (shouldRedirect) {
-      // Use the SDK's logout method which handles token cleanup and redirect
-      base44.auth.logout(window.location.href);
-    } else {
-      // Just remove the token without redirect
-      base44.auth.logout();
-    }
+    navigate('/Home');
   };
 
-  const navigateToLogin = () => {
-    // Use the SDK's redirectToLogin method
-    base44.auth.redirectToLogin(window.location.href);
-  };
+  /** Kept for API compatibility — locally just navigate to /login */
+  const navigateToLogin = () => navigate('/login');
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      isAuthenticated, 
+    <AuthContext.Provider value={{
+      user,
+      isAuthenticated,
       isLoadingAuth,
       isLoadingPublicSettings,
       authError,
       appPublicSettings,
+      login,
       logout,
       navigateToLogin,
-      checkAppState
+      checkAppState,
     }}>
       {children}
     </AuthContext.Provider>
   );
-};
+}
+
+/**
+ * AuthProvider wraps the inner component.
+ * It must be rendered *inside* <BrowserRouter> (which is the
+ * case in App.jsx where <Router> wraps <AuthProvider>).
+ */
+export const AuthProvider = ({ children }) => (
+  <AuthProviderInner>{children}</AuthProviderInner>
+);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };

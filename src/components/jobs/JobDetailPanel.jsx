@@ -97,7 +97,10 @@ export default function JobDetailPanel({ job }) {
         toast({ title: 'Job saved!', duration: 2000 });
       }
     },
-    onSuccess: () => refetchSaved(),
+    onSuccess: () => {
+      refetchSaved();
+      queryClient.invalidateQueries({ queryKey: ['saved-jobs'] });
+    },
   });
 
   const isSaved = !!savedItem;

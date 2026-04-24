@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
-  Users, Briefcase, Building2, FileText, CheckCircle, XCircle,
+  Users, Briefcase, Building2, FileText, CheckCircle, XCircle, ArrowLeft,
   LayoutDashboard, ClipboardList, CreditCard, BarChart2, Search, Clock, ChevronRight, TrendingUp
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend } from 'recharts';
@@ -34,6 +34,8 @@ export default function AdminDashboard() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [search, setSearch] = useState('');
+  const [selectedJobId, setSelectedJobId] = useState(null);
+  const [adminNote, setAdminNote] = useState('');
 
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
 
@@ -86,6 +88,8 @@ export default function AdminDashboard() {
 
   const pendingJobs = jobs.filter(j => j.approval_status === 'pending');
   const approvedJobs = jobs.filter(j => j.approval_status === 'approved');
+  const selectedJob = useMemo(() => jobs.find(j => j.id === selectedJobId), [jobs, selectedJobId]);
+  const selectedJobCompany = useMemo(() => companies.find(c => c.company_name === selectedJob?.company_name || c.user_email === selectedJob?.company_email), [companies, selectedJob]);
 
   const hiringRate = applications.length > 0
     ? Math.round((applications.filter(a => a.status === 'hired').length / applications.length) * 100)
@@ -159,7 +163,7 @@ export default function AdminDashboard() {
           {SIDEBAR.map(item => (
             <button
               key={item.key}
-              onClick={() => { setActiveTab(item.key); setSearch(''); }}
+              onClick={() => { setActiveTab(item.key); setSearch(''); setSelectedJobId(null); setAdminNote(''); }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                 activeTab === item.key
                   ? 'bg-indigo-50 text-indigo-700'
@@ -216,7 +220,10 @@ export default function AdminDashboard() {
                     <div className="space-y-2">
                       {pendingJobs.slice(0, 4).map(j => (
                         <div key={j.id} className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 border border-yellow-100">
-                          <div>
+                          <div 
+                            className="cursor-pointer hover:underline" 
+                            onClick={() => { setActiveTab('approvals'); setSelectedJobId(j.id); }}
+                          >
                             <p className="text-sm font-medium text-slate-900">{j.title}</p>
                             <p className="text-xs text-slate-500">{j.company_name}</p>
                           </div>
@@ -263,7 +270,7 @@ export default function AdminDashboard() {
           )}
 
           {/* Job Approvals */}
-          {activeTab === 'approvals' && (
+          {activeTab === 'approvals' && !selectedJobId && (
             <>
               <div className="flex items-center justify-between mb-6">
                 <h1 className="text-2xl font-bold text-slate-900">Job Approvals</h1>
@@ -288,8 +295,11 @@ export default function AdminDashboard() {
                   {filteredJobs.map(job => (
                     <Card key={job.id} className="p-4">
                       <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
+                        <div 
+                          className="flex-1 cursor-pointer group"
+                          onClick={() => setSelectedJobId(job.id)}
+                        >
+                          <div className="flex items-center gap-2 flex-wrap group-hover:underline">
                             <p className="font-semibold text-slate-900">{job.title}</p>
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${approvalColors[job.approval_status || 'pending']}`}>
                               {job.approval_status || 'pending'}
@@ -337,6 +347,139 @@ export default function AdminDashboard() {
                 </div>
               )}
             </>
+          )}
+
+          {activeTab === 'approvals' && selectedJob && (
+            <div className="max-w-4xl mx-auto py-2">
+              <button
+                onClick={() => { setSelectedJobId(null); setAdminNote(''); }}
+                className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 mb-6 font-medium"
+              >
+                <ArrowLeft className="w-4 h-4" /> Back to Approvals
+              </button>
+              
+              <Card className="p-8 shadow-sm">
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h1 className="text-3xl font-bold text-slate-900 mb-2">{selectedJob.title}</h1>
+                    
+                    {selectedJobCompany ? (
+                      <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mt-4 mb-4 flex items-center gap-4">
+                        {selectedJobCompany.logo_url ? (
+                          <img src={selectedJobCompany.logo_url} alt="" className="w-12 h-12 rounded-lg object-cover border bg-white" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center">
+                            <Building2 className="w-6 h-6 text-indigo-400" />
+                          </div>
+                        )}
+                        <div>
+                          <p className="text-lg text-slate-900 font-bold">{selectedJobCompany.company_name}</p>
+                          <p className="text-sm text-slate-500">
+                            {[
+                              selectedJobCompany.industry, 
+                              selectedJobCompany.company_size ? `${selectedJobCompany.company_size} employees` : null, 
+                              selectedJobCompany.hq_country || selectedJobCompany.headquarters
+                            ].filter(Boolean).join(' · ') || 'No company details available'}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-lg text-slate-600 font-medium mb-3">{selectedJob.company_name} <span className="text-sm text-slate-400">(Company details not available)</span></p>
+                    )}
+
+                    <div className="flex gap-2 mt-2 text-sm text-slate-500 items-center">
+                       <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${approvalColors[selectedJob.approval_status || 'pending']}`}>
+                         {selectedJob.approval_status || 'pending'}
+                       </span>
+                       {selectedJob.location && (
+                         <>
+                           <span>•</span>
+                           <span>{selectedJob.location}</span>
+                         </>
+                       )}
+                       {selectedJob.type && (
+                         <>
+                           <span>•</span>
+                           <span>{selectedJob.type}</span>
+                         </>
+                       )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-3">Job Description</h3>
+                  <div className="text-slate-600 whitespace-pre-wrap">
+                    {selectedJob.description || "No description provided."}
+                  </div>
+                </div>
+
+                {selectedJob.requirements && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-3">Requirements</h3>
+                    <div className="text-slate-600 whitespace-pre-wrap">
+                      {selectedJob.requirements}
+                    </div>
+                  </div>
+                )}
+
+                {selectedJob.skills && selectedJob.skills.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-3">Skills</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedJob.skills.map(skill => (
+                        <span key={skill} className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-sm">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="border-t pt-6 mt-8 border-slate-100">
+                  <h3 className="font-semibold text-slate-900 mb-4">Approval Action</h3>
+                  
+                  <div className="mb-5">
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                      Admin Remarks <span className="font-normal text-slate-400">(Optional, typically used to explain rejections)</span>
+                    </label>
+                    <textarea
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow text-sm"
+                      rows="3"
+                      placeholder="Provide a reason or feedback..."
+                      value={adminNote}
+                      onChange={e => setAdminNote(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="flex gap-4">
+                    <Button 
+                      className="bg-green-600 hover:bg-green-700 gap-2 flex-1 h-12 text-base rounded-xl"
+                      onClick={() => {
+                        approveMutation.mutate({ id: selectedJob.id, approval_status: 'approved', admin_note: adminNote, job: selectedJob });
+                        setSelectedJobId(null);
+                        setAdminNote('');
+                      }}
+                      disabled={approveMutation.isPending}
+                    >
+                      <CheckCircle className="w-5 h-5" /> Approve Job
+                    </Button>
+                    <Button
+                      variant="outline" 
+                      className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 gap-2 flex-1 h-12 text-base rounded-xl"
+                      onClick={() => {
+                        approveMutation.mutate({ id: selectedJob.id, approval_status: 'rejected', admin_note: adminNote, job: selectedJob });
+                        setSelectedJobId(null);
+                        setAdminNote('');
+                      }}
+                      disabled={approveMutation.isPending}
+                    >
+                      <XCircle className="w-5 h-5" /> Reject Job
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            </div>
           )}
 
           {/* Companies */}

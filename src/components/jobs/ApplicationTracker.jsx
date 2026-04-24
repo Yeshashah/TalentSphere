@@ -2,8 +2,9 @@ import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Briefcase, Building2, Clock } from 'lucide-react';
+import { Briefcase, Building2, Clock, MapPin, DollarSign, ArrowRight } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { Link } from 'react-router-dom';
 import EmptyState from '../shared/EmptyState';
 import LoadingSpinner from '../shared/LoadingSpinner';
 import { useToast } from '@/components/ui/use-toast';
@@ -22,7 +23,7 @@ const STATUS_CONFIG = {
 
 const STEPS = ['applied', 'under review', 'interview scheduled', 'interview complete', 'under evaluation', 'offer extended'];
 
-export default function ApplicationTracker() {
+export default function ApplicationTracker({ jobId }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -40,21 +41,28 @@ export default function ApplicationTracker() {
   const withdrawMutation = useMutation({
     mutationFn: (appId) => base44.entities.Application.update(appId, { status: 'withdrawn' }),
     onSuccess: () => {
-      toast({ title: 'Application withdrawn', duration: 2000 });
+      toast({ title: 'Application withdrawn', duration: 3000 });
       queryClient.invalidateQueries({ queryKey: ['my-applications-track'] });
     },
   });
 
+  const { data: jobs = [] } = useQuery({
+    queryKey: ['tracker-jobs'],
+    queryFn: () => base44.entities.Job.list(),
+  });
+
+  const appsToDisplay = jobId ? applications.filter(a => a.job_id === jobId) : applications;
+
   if (isLoading) return <LoadingSpinner />;
-  if (applications.length === 0) {
-    return <EmptyState icon={Briefcase} title="No applications yet" description="Apply to jobs to track your progress here" />;
+  if (appsToDisplay.length === 0) {
+    return <EmptyState icon={Briefcase} title="No applications found" description="No tracking info available here." />;
   }
 
   return (
     <div className="p-6 space-y-4 overflow-y-auto h-full">
       <h2 className="text-lg font-bold text-slate-900">Track Applications</h2>
 
-      {applications.map(app => {
+      {appsToDisplay.map(app => {
         const status = app.status || 'applied';
         const isRejected = status === 'rejected';
         const isWithdrawn = status === 'withdrawn';
@@ -80,6 +88,36 @@ export default function ApplicationTracker() {
                 {statusCfg.label}
               </span>
             </div>
+
+            {/* Job Details snippet */}
+            {(() => {
+              const job = jobs.find(j => j.id === app.job_id);
+              if (!job) return null;
+              return (
+                <div className="mb-6 p-4 rounded-lg bg-slate-50 border border-slate-100">
+                  <div className="flex flex-wrap gap-4 text-sm text-slate-600 mb-2">
+                    {job.location && (
+                      <span className="flex items-center gap-1"><MapPin className="w-4 h-4 text-slate-400"/> {job.location}</span>
+                    )}
+                    {(job.salary_min || job.salary_max) && (
+                      <span className="flex items-center gap-1">
+                        <DollarSign className="w-4 h-4 text-slate-400"/>
+                        {job.salary_min && job.salary_max ? `$${(job.salary_min/1000).toFixed(0)}k - $${(job.salary_max/1000).toFixed(0)}k` : `$${(job.salary_min/1000).toFixed(0)}k+`}
+                      </span>
+                    )}
+                    {job.employment_type && (
+                      <span className="flex items-center gap-1 capitalize"><Briefcase className="w-4 h-4 text-slate-400"/> {job.employment_type.replace('_', '-')}</span>
+                    )}
+                  </div>
+                  {job.skills_required?.length > 0 && (
+                    <p className="text-xs text-slate-500 mb-3"><strong>Skills:</strong> {job.skills_required.join(', ')}</p>
+                  )}
+                  <Link to={`/Jobs?jobId=${job.id}`} className="text-xs font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
+                    View full job description <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
+              );
+            })()}
 
             {/* Progress bar */}
             {!isTerminal ? (

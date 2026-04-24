@@ -199,15 +199,17 @@ export default function CandidateDashboard() {
             ) : (
               <Card className="overflow-hidden">
                 {applications.slice(0, 6).map((app, i) => (
-                  <div key={app.id} className={`flex items-center justify-between px-4 py-3 ${i < Math.min(applications.length, 6) - 1 ? 'border-b' : ''}`}>
-                    <div>
-                      <p className="font-medium text-slate-900 text-sm">{app.job_title}</p>
-                      <p className="text-xs text-slate-400">{app.company_name}</p>
+                  <Link key={app.id} to={`/Jobs?tab=applied&jobId=${app.job_id}`} className={`block hover:bg-slate-50 transition-colors ${i < Math.min(applications.length, 6) - 1 ? 'border-b' : ''}`}>
+                    <div className="flex items-center justify-between px-4 py-3">
+                      <div>
+                        <p className="font-medium text-slate-900 text-sm">{app.job_title}</p>
+                        <p className="text-xs text-slate-400">{app.company_name}</p>
+                      </div>
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusColors[app.status] || 'bg-slate-100 text-slate-600'}`}>
+                        {app.status}
+                      </span>
                     </div>
-                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusColors[app.status] || 'bg-slate-100 text-slate-600'}`}>
-                      {app.status}
-                    </span>
-                  </div>
+                  </Link>
                 ))}
               </Card>
             )}
@@ -227,7 +229,7 @@ export default function CandidateDashboard() {
             ) : (
               <Card className="overflow-hidden">
                 {savedJobs.slice(0, 5).map((item, i) => (
-                  <Link key={item.id} to={`/JobDetail?id=${item.item_id}`}
+                  <Link key={item.id} to={`/Jobs?tab=saved&jobId=${item.item_id}`}
                     className={`flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors ${i < Math.min(savedJobs.length, 5) - 1 ? 'border-b' : ''}`}>
                     <div>
                       <p className="font-medium text-slate-900 text-sm">{item.item_title}</p>

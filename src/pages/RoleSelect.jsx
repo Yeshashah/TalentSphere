@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { localClient } from '@/api/localClient';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Users, Building2, ArrowRight } from 'lucide-react';
@@ -15,13 +15,12 @@ export default function RoleSelect() {
     if (!selected) return;
     setLoading(true);
     try {
-      // Check current user role first — never overwrite admin role
-      const me = await base44.auth.me();
+      const me = await localClient.auth.me();
       if (me?.role === 'admin') {
         navigate('/AdminDashboard');
         return;
       }
-      await base44.auth.updateMe({ role: selected });
+      await localClient.auth.updateMe({ role: selected });
       if (selected === 'candidate') {
         navigate('/EditCandidateProfile');
       } else if (selected === 'company') {

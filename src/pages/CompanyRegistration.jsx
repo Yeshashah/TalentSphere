@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { localClient } from '@/api/localClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -67,11 +67,18 @@ export default function CompanyRegistration() {
     setError('');
 
     try {
-      const response = await base44.functions.invoke('registerCompany', {
+      await localClient.auth.register({
         email: formData.email,
+        full_name: formData.company_name,
+        role: 'company',
+        password: 'changeme123',
+      });
+
+      await localClient.entities.CompanyProfile.create({
+        user_email: formData.email,
         company_name: formData.company_name,
         hq_country: formData.hq_country,
-        year_founded: parseInt(formData.year_founded),
+        year_founded: Number(formData.year_founded),
         company_type: formData.company_type,
         linkedin_profile_name: formData.linkedin_profile_name,
         linkedin_profile_url: formData.linkedin_profile_url,
@@ -79,18 +86,14 @@ export default function CompanyRegistration() {
         company_website: formData.company_website,
         linkedin_industries: formData.linkedin_industries,
         recent_job_openings_title: formData.recent_job_openings_title,
-        recent_job_openings: parseInt(formData.recent_job_openings) || 0,
+        recent_job_openings: Number(formData.recent_job_openings) || 0,
         all_office_addresses: formData.all_office_addresses,
       });
 
-      if (response.data?.success) {
-        alert('Registration successful! You will receive an email invitation to set your password. Please check your email and log in.');
-        navigate('/Home');
-      } else {
-        setError(response.data?.error || 'Registration failed');
-      }
+      alert(`Registration successful! Your temporary password is: changeme123\nPlease sign in and update your password.`);
+      navigate('/login');
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Registration failed');
+      setError(err.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -292,7 +295,7 @@ export default function CompanyRegistration() {
                 onChange={handleInputChange}
                 placeholder="List all office addresses (one per line)"
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
-                rows="3"
+                rows={3}
               />
             </div>
 

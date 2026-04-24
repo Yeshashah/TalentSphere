@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { localClient } from '@/api/localClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -68,28 +68,41 @@ export default function CandidateRegistration() {
     setError('');
 
     try {
-      const response = await base44.functions.invoke('registerCandidate', {
+      const result = await localClient.auth.register({
         email: formData.email,
         full_name: formData.full_name,
         phone: formData.phone,
         job_title: formData.job_title,
-        years_of_experience: parseInt(formData.years_of_experience),
+        years_of_experience: Number(formData.years_of_experience),
         skills: formData.skills,
         linkedin: formData.linkedin,
         portfolio_link: formData.portfolio_link,
         education_degree: formData.education_degree,
-        graduation_year: parseInt(formData.graduation_year),
+        graduation_year: Number(formData.graduation_year),
+        open_to_work: formData.open_to_work,
+        role: 'candidate',
+        password: 'changeme123', // temporary default password
+      });
+
+      // Also create a CandidateProfile entity
+      await localClient.entities.CandidateProfile.create({
+        user_email: formData.email,
+        full_name: formData.full_name,
+        phone: formData.phone,
+        job_title: formData.job_title,
+        years_of_experience: Number(formData.years_of_experience),
+        skills: formData.skills,
+        linkedin: formData.linkedin,
+        portfolio_link: formData.portfolio_link,
+        education_degree: formData.education_degree,
+        graduation_year: Number(formData.graduation_year),
         open_to_work: formData.open_to_work,
       });
 
-      if (response.data?.success) {
-        alert('Registration successful! You will receive an email invitation to set your password. Please check your email and log in.');
-        navigate('/Home');
-      } else {
-        setError(response.data?.error || 'Registration failed');
-      }
+      alert(`Registration successful! Your temporary password is: changeme123\nPlease sign in and update your password.`);
+      navigate('/login');
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Registration failed');
+      setError(err.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -275,6 +288,17 @@ export default function CandidateRegistration() {
             >
               {loading ? 'Creating Account...' : 'Create Account'}
             </Button>
+            
+            <p className="text-center text-sm text-slate-500 mt-4">
+              Already have an account?{' '}
+              <button 
+                type="button" 
+                onClick={() => navigate('/login')} 
+                className="text-indigo-500 hover:underline font-medium"
+              >
+                SignIn
+              </button>
+            </p>
           </form>
         </Card>
       </div>

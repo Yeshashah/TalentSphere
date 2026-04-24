@@ -80,7 +80,7 @@ export default function Registration() {
 
         <p className="text-center text-sm text-slate-500 mt-4">
           Already have an account?{' '}
-          <button onClick={() => window.location.href = '/Home'} className="text-indigo-500 hover:underline font-medium">
+          <button onClick={() => navigate('/login')} className="text-indigo-500 hover:underline font-medium">
             Sign In
           </button>
         </p>

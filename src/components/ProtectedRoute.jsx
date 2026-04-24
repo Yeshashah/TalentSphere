@@ -12,7 +12,7 @@ export default function ProtectedRoute({ children, requiredRole, requiredRoles }
   }
 
   if (!user) {
-    return <Navigate to="/Home" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   // Check if user has required role

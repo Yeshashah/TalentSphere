@@ -46,14 +46,14 @@ export default function Navbar({ user }) {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/40 backdrop-blur-xl border-b border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
           <Link to="/Home" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center">
               <Briefcase className="w-4 h-4 text-white" />
             </div>
-            <span className="text-lg font-bold text-slate-900 tracking-tight">TalentHub</span>
+            <span className="text-lg font-bold text-white tracking-tight">TalentSphere</span>
           </Link>
 
           {/* Desktop nav */}
@@ -62,11 +62,10 @@ export default function Navbar({ user }) {
               <Link
                 key={link.to}
                 to={link.to}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                  isActive(link.to)
-                    ? 'bg-indigo-50 text-indigo-700'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                }`}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${isActive(link.to)
+                    ? 'bg-white/10 text-white'
+                    : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
               >
                 {link.icon && <link.icon className="w-4 h-4" />}
                 {link.label}
@@ -87,7 +86,7 @@ export default function Navbar({ user }) {
                 <LogOut className="w-4 h-4" />
               </Button>
             ) : (
-              <Button size="sm" onClick={() => navigate('/login')} className="bg-slate-900 text-white hover:bg-indigo-600 rounded-xl transition-all shadow-md">
+              <Button size="sm" onClick={() => navigate('/login')} className="bg-white text-black hover:bg-indigo-400 rounded-xl transition-all shadow-md">
                 Get Started
               </Button>
             )}
@@ -107,9 +106,8 @@ export default function Navbar({ user }) {
                     key={link.to}
                     to={link.to}
                     onClick={() => setOpen(false)}
-                    className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                      isActive(link.to) ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'
-                    }`}
+                    className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${isActive(link.to) ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'
+                      }`}
                   >
                     {link.icon && <link.icon className="w-4 h-4" />}
                     {link.label}

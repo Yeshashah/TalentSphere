@@ -7,8 +7,8 @@ const skillSuggestions = ['React', 'Python', 'Node.js', 'Java', 'SQL', 'AWS', 'T
 
 function FilterSection({ title, children }) {
   return (
-    <div className="border-b pb-4 mb-4">
-      <p className="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">{title}</p>
+    <div className="border-b border-white/10 pb-4 mb-4">
+      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">{title}</p>
       {children}
     </div>
   );
@@ -23,9 +23,9 @@ function CheckGroup({ options, selected, onToggle }) {
             type="checkbox"
             checked={selected.includes(opt)}
             onChange={() => onToggle(opt)}
-            className="rounded border-slate-300 accent-indigo-600"
+            className="rounded border-white/20 bg-white/5 accent-indigo-500"
           />
-          <span className="text-xs text-slate-600 group-hover:text-slate-900">{opt}</span>
+          <span className="text-xs text-slate-400 group-hover:text-white transition-colors">{opt}</span>
         </label>
       ))}
     </div>
@@ -43,9 +43,9 @@ export default function CandidateFilters({ filters, onChange }) {
   const hasFilters = Object.values(filters).some(v => Array.isArray(v) ? v.length > 0 : !!v);
 
   return (
-    <div className="w-52 flex-shrink-0 border-r bg-white overflow-y-auto p-4">
+    <div className="w-52 flex-shrink-0 border-r border-white/10 bg-white/5 backdrop-blur-md overflow-y-auto p-4">
       <div className="flex items-center justify-between mb-4">
-        <p className="font-semibold text-slate-800 text-sm">Filters</p>
+        <p className="font-semibold text-white text-sm">Filters</p>
         {hasFilters && (
           <button onClick={() => onChange({})} className="text-xs text-indigo-600 hover:underline flex items-center gap-1">
             <X className="w-3 h-3" /> Clear
@@ -59,7 +59,7 @@ export default function CandidateFilters({ filters, onChange }) {
           placeholder="Search by name..."
           value={filters.name || ''}
           onChange={e => set('name', e.target.value)}
-          className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+          className="w-full text-xs border border-white/10 bg-white/5 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-indigo-500 placeholder:text-slate-500"
         />
       </FilterSection>
 
@@ -101,7 +101,7 @@ export default function CandidateFilters({ filters, onChange }) {
               <button
                 key={s}
                 onClick={() => set('skills', filters.skills ? `${filters.skills}, ${s}` : s)}
-                className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200 text-slate-500 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
+                className="text-[10px] px-2 py-0.5 rounded-full border border-white/10 text-slate-400 hover:border-indigo-500 hover:text-white transition-colors"
               >
                 {s}
               </button>
@@ -120,9 +120,9 @@ export default function CandidateFilters({ filters, onChange }) {
             type="checkbox"
             checked={filters.openToWork === true}
             onChange={() => set('openToWork', filters.openToWork ? undefined : true)}
-            className="rounded border-slate-300 accent-indigo-600"
+            className="rounded border-white/20 bg-white/5 accent-indigo-500"
           />
-          <span className="text-xs text-slate-600 group-hover:text-slate-900">Open to Work only</span>
+          <span className="text-xs text-slate-400 group-hover:text-white transition-colors">Open to Work only</span>
         </label>
       </FilterSection>
 
@@ -132,7 +132,7 @@ export default function CandidateFilters({ filters, onChange }) {
           placeholder="e.g. New York, Remote"
           value={filters.location || ''}
           onChange={e => set('location', e.target.value)}
-          className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+          className="w-full text-xs border border-white/10 bg-white/5 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-indigo-500 placeholder:text-slate-500"
         />
       </FilterSection>
     </div>

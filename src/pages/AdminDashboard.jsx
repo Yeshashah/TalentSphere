@@ -152,12 +152,12 @@ export default function AdminDashboard() {
   if (!user) return <LoadingSpinner />;
 
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="flex h-screen bg-transparent">
       {/* Sidebar */}
-      <div className="w-60 flex-shrink-0 bg-white border-r flex flex-col">
-        <div className="p-5 border-b">
+      <div className="w-60 flex-shrink-0 bg-black/20 backdrop-blur-xl border-r border-white/10 flex flex-col">
+        <div className="p-5 border-b border-white/10">
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Super Admin</p>
-          <p className="font-bold text-slate-900 text-sm">{user?.full_name || user?.email}</p>
+          <p className="font-bold text-white text-sm">{user?.full_name || user?.email}</p>
         </div>
         <nav className="flex-1 p-3 space-y-1">
           {SIDEBAR.map(item => (
@@ -166,8 +166,8 @@ export default function AdminDashboard() {
               onClick={() => { setActiveTab(item.key); setSearch(''); setSelectedJobId(null); setAdminNote(''); }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                 activeTab === item.key
-                  ? 'bg-indigo-50 text-indigo-700'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  ? 'bg-white/10 text-white'
+                  : 'text-slate-400 hover:bg-white/5 hover:text-white'
               }`}
             >
               <item.icon className="w-4 h-4 flex-shrink-0" />
@@ -188,17 +188,17 @@ export default function AdminDashboard() {
           {/* Dashboard */}
           {activeTab === 'dashboard' && (
             <>
-              <h1 className="text-2xl font-bold text-slate-900 mb-6">Admin Dashboard</h1>
+              <h1 className="text-2xl font-bold text-white mb-6">Admin Dashboard</h1>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 {dashboardStats.map(s => (
-                  <Card key={s.label} className="p-5">
+                  <Card key={s.label} className="p-5 bg-white/5 border-white/10 backdrop-blur-md">
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${s.color}`}>
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${s.color} bg-opacity-10`}>
                         <s.icon className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-slate-900">{s.value}</p>
-                        <p className="text-xs text-slate-500">{s.label}</p>
+                        <p className="text-2xl font-bold text-white">{s.value}</p>
+                        <p className="text-xs text-slate-400">{s.label}</p>
                       </div>
                     </div>
                   </Card>
@@ -207,10 +207,10 @@ export default function AdminDashboard() {
 
               <div className="grid lg:grid-cols-2 gap-6">
                 {/* Pending approvals preview */}
-                <Card className="p-5">
+                <Card className="p-5 bg-white/5 border-white/10 backdrop-blur-md">
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="font-semibold text-slate-900">Pending Approvals</h2>
-                    <Button variant="ghost" size="sm" className="text-indigo-600" onClick={() => setActiveTab('approvals')}>
+                    <h2 className="font-semibold text-white">Pending Approvals</h2>
+                    <Button variant="ghost" size="sm" className="text-indigo-400 hover:text-indigo-300" onClick={() => setActiveTab('approvals')}>
                       View All <ChevronRight className="w-4 h-4 ml-1" />
                     </Button>
                   </div>
@@ -219,20 +219,20 @@ export default function AdminDashboard() {
                   ) : (
                     <div className="space-y-2">
                       {pendingJobs.slice(0, 4).map(j => (
-                        <div key={j.id} className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 border border-yellow-100">
+                        <div key={j.id} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10">
                           <div 
                             className="cursor-pointer hover:underline" 
                             onClick={() => { setActiveTab('approvals'); setSelectedJobId(j.id); }}
                           >
-                            <p className="text-sm font-medium text-slate-900">{j.title}</p>
-                            <p className="text-xs text-slate-500">{j.company_name}</p>
+                            <p className="text-sm font-medium text-white">{j.title}</p>
+                            <p className="text-xs text-slate-400">{j.company_name}</p>
                           </div>
                           <div className="flex gap-1.5">
-                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-green-600 hover:bg-green-50"
+                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-emerald-400 hover:bg-emerald-500/10"
                               onClick={() => approveMutation.mutate({ id: j.id, approval_status: 'approved', job: j })}>
                               <CheckCircle className="w-4 h-4" />
                             </Button>
-                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-red-500 hover:bg-red-50"
+                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-rose-400 hover:bg-rose-500/10"
                               onClick={() => approveMutation.mutate({ id: j.id, approval_status: 'rejected', job: j })}>
                               <XCircle className="w-4 h-4" />
                             </Button>
@@ -244,24 +244,24 @@ export default function AdminDashboard() {
                 </Card>
 
                 {/* Analytics card */}
-                <Card className="p-5">
-                  <h2 className="font-semibold text-slate-900 mb-4">Analytics Summary</h2>
+                <Card className="p-5 bg-white/5 border-white/10 backdrop-blur-md">
+                  <h2 className="font-semibold text-white mb-4">Analytics Summary</h2>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-600">Active Jobs (approved)</span>
-                      <span className="font-bold text-slate-900">{approvedJobs.length}</span>
+                      <span className="text-sm text-slate-400">Active Jobs (approved)</span>
+                      <span className="font-bold text-white">{approvedJobs.length}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-600">Total Applications</span>
-                      <span className="font-bold text-slate-900">{applications.length}</span>
+                      <span className="text-sm text-slate-400">Total Applications</span>
+                      <span className="font-bold text-white">{applications.length}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-600">Hiring Rate</span>
-                      <span className="font-bold text-emerald-600">{hiringRate}%</span>
+                      <span className="text-sm text-slate-400">Hiring Rate</span>
+                      <span className="font-bold text-emerald-400">{hiringRate}%</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-600">Rejected Jobs</span>
-                      <span className="font-bold text-red-500">{jobs.filter(j => j.approval_status === 'rejected').length}</span>
+                      <span className="text-sm text-slate-400">Rejected Jobs</span>
+                      <span className="font-bold text-rose-400">{jobs.filter(j => j.approval_status === 'rejected').length}</span>
                     </div>
                   </div>
                 </Card>
@@ -273,10 +273,10 @@ export default function AdminDashboard() {
           {activeTab === 'approvals' && !selectedJobId && (
             <>
               <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold text-slate-900">Job Approvals</h1>
+                <h1 className="text-2xl font-bold text-white">Job Approvals</h1>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <Input className="pl-9 w-60" placeholder="Search jobs..." value={search} onChange={e => setSearch(e.target.value)} />
+                  <Input className="pl-9 w-60 bg-white/5 border-white/10 text-white placeholder:text-slate-500" placeholder="Search jobs..." value={search} onChange={e => setSearch(e.target.value)} />
                 </div>
               </div>
 
@@ -293,34 +293,38 @@ export default function AdminDashboard() {
                 <div className="space-y-3">
                   {filteredJobs.length === 0 && <p className="text-sm text-slate-400 text-center py-8">No jobs found.</p>}
                   {filteredJobs.map(job => (
-                    <Card key={job.id} className="p-4">
+                    <Card key={job.id} className="p-4 bg-white/5 border-white/10 backdrop-blur-md">
                       <div className="flex items-start justify-between gap-4">
                         <div 
                           className="flex-1 cursor-pointer group"
                           onClick={() => setSelectedJobId(job.id)}
                         >
                           <div className="flex items-center gap-2 flex-wrap group-hover:underline">
-                            <p className="font-semibold text-slate-900">{job.title}</p>
-                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${approvalColors[job.approval_status || 'pending']}`}>
+                            <p className="font-semibold text-white">{job.title}</p>
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                              job.approval_status === 'approved' ? 'bg-emerald-500/10 text-emerald-400' :
+                              job.approval_status === 'rejected' ? 'bg-rose-500/10 text-rose-400' :
+                              'bg-amber-500/10 text-amber-400'
+                            }`}>
                               {job.approval_status || 'pending'}
                             </span>
                           </div>
-                          <p className="text-sm text-slate-500 mt-0.5">{job.company_name} · {job.location || job.work_mode}</p>
+                          <p className="text-sm text-slate-400 mt-0.5">{job.company_name} · {job.location || job.work_mode}</p>
                           {job.created_date && (
-                            <p className="text-xs text-slate-400 mt-1">Posted {formatDistanceToNow(new Date(job.created_date), { addSuffix: true })}</p>
+                            <p className="text-xs text-slate-500 mt-1">Posted {formatDistanceToNow(new Date(job.created_date), { addSuffix: true })}</p>
                           )}
                           {job.admin_note && (
-                            <p className="text-xs text-red-500 mt-1">Note: {job.admin_note}</p>
+                            <p className="text-xs text-rose-400 mt-1 font-medium">Note: {job.admin_note}</p>
                           )}
                         </div>
                         {(job.approval_status === 'pending' || job.approval_status === undefined) && (
                           <div className="flex gap-2 flex-shrink-0">
-                            <Button size="sm" className="bg-green-600 hover:bg-green-700 gap-1.5"
+                            <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
                               onClick={() => approveMutation.mutate({ id: job.id, approval_status: 'approved' })}
                               disabled={approveMutation.isPending}>
                               <CheckCircle className="w-4 h-4" /> Approve
                             </Button>
-                            <Button size="sm" variant="outline" className="text-red-500 border-red-200 hover:bg-red-50 gap-1.5"
+                            <Button size="sm" variant="outline" className="text-rose-400 border-rose-500/20 hover:bg-rose-500/10 gap-1.5"
                               onClick={() => approveMutation.mutate({ id: job.id, approval_status: 'rejected' })}
                               disabled={approveMutation.isPending}>
                               <XCircle className="w-4 h-4" /> Reject
@@ -328,14 +332,14 @@ export default function AdminDashboard() {
                           </div>
                         )}
                         {job.approval_status === 'approved' && (
-                          <Button size="sm" variant="outline" className="text-red-500 border-red-200 hover:bg-red-50 gap-1.5 flex-shrink-0"
+                          <Button size="sm" variant="outline" className="text-rose-400 border-rose-500/20 hover:bg-rose-500/10 gap-1.5 flex-shrink-0"
                             onClick={() => approveMutation.mutate({ id: job.id, approval_status: 'rejected' })}
                             disabled={approveMutation.isPending}>
                             <XCircle className="w-4 h-4" /> Revoke
                           </Button>
                         )}
                         {job.approval_status === 'rejected' && (
-                          <Button size="sm" className="bg-green-600 hover:bg-green-700 gap-1.5 flex-shrink-0"
+                          <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 flex-shrink-0"
                             onClick={() => approveMutation.mutate({ id: job.id, approval_status: 'approved' })}
                             disabled={approveMutation.isPending}>
                             <CheckCircle className="w-4 h-4" /> Re-approve
@@ -353,27 +357,27 @@ export default function AdminDashboard() {
             <div className="max-w-4xl mx-auto py-2">
               <button
                 onClick={() => { setSelectedJobId(null); setAdminNote(''); }}
-                className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 mb-6 font-medium"
+                className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 mb-6 font-medium"
               >
                 <ArrowLeft className="w-4 h-4" /> Back to Approvals
               </button>
               
-              <Card className="p-8 shadow-sm">
+              <Card className="p-8 shadow-sm bg-white/5 border-white/10 backdrop-blur-md">
                 <div className="flex justify-between items-start mb-6">
                   <div>
-                    <h1 className="text-3xl font-bold text-slate-900 mb-2">{selectedJob.title}</h1>
+                    <h1 className="text-3xl font-bold text-white mb-2">{selectedJob.title}</h1>
                     
                     {selectedJobCompany ? (
-                      <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mt-4 mb-4 flex items-center gap-4">
+                      <div className="bg-white/5 p-4 rounded-xl border border-white/10 mt-4 mb-4 flex items-center gap-4">
                         {selectedJobCompany.logo_url ? (
-                          <img src={selectedJobCompany.logo_url} alt="" className="w-12 h-12 rounded-lg object-cover border bg-white" />
+                          <img src={selectedJobCompany.logo_url} alt="" className="w-12 h-12 rounded-lg object-cover border bg-white/10" />
                         ) : (
-                          <div className="w-12 h-12 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center">
+                          <div className="w-12 h-12 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
                             <Building2 className="w-6 h-6 text-indigo-400" />
                           </div>
                         )}
                         <div>
-                          <p className="text-lg text-slate-900 font-bold">{selectedJobCompany.company_name}</p>
+                          <p className="text-lg text-white font-bold">{selectedJobCompany.company_name}</p>
                           <p className="text-sm text-slate-500">
                             {[
                               selectedJobCompany.industry, 
@@ -408,8 +412,8 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="mb-8">
-                  <h3 className="text-lg font-semibold text-slate-900 mb-3">Job Description</h3>
-                  <div className="text-slate-600 whitespace-pre-wrap">
+                  <h3 className="text-lg font-semibold text-white mb-3">Job Description</h3>
+                  <div className="text-slate-400 whitespace-pre-wrap">
                     {selectedJob.description || "No description provided."}
                   </div>
                 </div>
@@ -436,15 +440,15 @@ export default function AdminDashboard() {
                   </div>
                 )}
 
-                <div className="border-t pt-6 mt-8 border-slate-100">
-                  <h3 className="font-semibold text-slate-900 mb-4">Approval Action</h3>
+                <div className="border-t pt-6 mt-8 border-white/10">
+                  <h3 className="font-semibold text-white mb-4">Approval Action</h3>
                   
                   <div className="mb-5">
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                      Admin Remarks <span className="font-normal text-slate-400">(Optional, typically used to explain rejections)</span>
+                    <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                      Admin Remarks <span className="font-normal text-slate-500">(Optional, typically used to explain rejections)</span>
                     </label>
                     <textarea
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow text-sm"
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow text-sm text-white"
                       rows="3"
                       placeholder="Provide a reason or feedback..."
                       value={adminNote}
@@ -454,7 +458,7 @@ export default function AdminDashboard() {
 
                   <div className="flex gap-4">
                     <Button 
-                      className="bg-green-600 hover:bg-green-700 gap-2 flex-1 h-12 text-base rounded-xl"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 flex-1 h-12 text-base rounded-xl"
                       onClick={() => {
                         approveMutation.mutate({ id: selectedJob.id, approval_status: 'approved', admin_note: adminNote, job: selectedJob });
                         setSelectedJobId(null);
@@ -466,7 +470,7 @@ export default function AdminDashboard() {
                     </Button>
                     <Button
                       variant="outline" 
-                      className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 gap-2 flex-1 h-12 text-base rounded-xl"
+                      className="text-rose-400 border-rose-500/20 hover:bg-rose-500/10 gap-2 flex-1 h-12 text-base rounded-xl"
                       onClick={() => {
                         approveMutation.mutate({ id: selectedJob.id, approval_status: 'rejected', admin_note: adminNote, job: selectedJob });
                         setSelectedJobId(null);
@@ -486,26 +490,26 @@ export default function AdminDashboard() {
           {activeTab === 'companies' && (
             <>
               <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold text-slate-900">Companies ({companies.length})</h1>
+                <h1 className="text-2xl font-bold text-white">Companies ({companies.length})</h1>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <Input className="pl-9 w-60" placeholder="Search companies..." value={search} onChange={e => setSearch(e.target.value)} />
+                  <Input className="pl-9 w-60 bg-white/5 border-white/10 text-white placeholder:text-slate-500" placeholder="Search companies..." value={search} onChange={e => setSearch(e.target.value)} />
                 </div>
               </div>
               {lco ? <LoadingSpinner /> : (
                 <div className="space-y-3">
                   {filteredCompanies.map(c => (
-                    <Card key={c.id} className="p-4 flex items-center gap-4">
+                    <Card key={c.id} className="p-4 flex items-center gap-4 bg-white/5 border-white/10 backdrop-blur-md">
                       {c.logo_url ? (
-                        <img src={c.logo_url} alt="" className="w-10 h-10 rounded-lg object-cover border" />
+                        <img src={c.logo_url} alt="" className="w-10 h-10 rounded-lg object-cover border border-white/10" />
                       ) : (
-                        <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center"><Building2 className="w-5 h-5 text-indigo-400" /></div>
+                        <div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center"><Building2 className="w-5 h-5 text-indigo-400" /></div>
                       )}
                       <div className="flex-1">
-                        <p className="font-semibold text-slate-900">{c.company_name}</p>
-                        <p className="text-xs text-slate-500">{c.industry} · {c.company_size} employees · {c.headquarters}</p>
+                        <p className="font-semibold text-white">{c.company_name}</p>
+                        <p className="text-xs text-slate-400">{c.industry} · {c.company_size} employees · {c.headquarters}</p>
                       </div>
-                      <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${c.subscription_plan === 'pro' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${c.subscription_plan === 'pro' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-white/5 text-slate-400'}`}>
                         {c.subscription_plan || 'free'}
                       </span>
                     </Card>
@@ -519,26 +523,26 @@ export default function AdminDashboard() {
           {activeTab === 'candidates' && (
             <>
               <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold text-slate-900">Candidates ({candidates.length})</h1>
+                <h1 className="text-2xl font-bold text-white">Candidates ({candidates.length})</h1>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <Input className="pl-9 w-60" placeholder="Search candidates..." value={search} onChange={e => setSearch(e.target.value)} />
+                  <Input className="pl-9 w-60 bg-white/5 border-white/10 text-white placeholder:text-slate-500" placeholder="Search candidates..." value={search} onChange={e => setSearch(e.target.value)} />
                 </div>
               </div>
               {lc ? <LoadingSpinner /> : (
                 <div className="space-y-3">
                   {filteredCandidates.map(c => (
-                    <Card key={c.id} className="p-4 flex items-center gap-4">
+                    <Card key={c.id} className="p-4 flex items-center gap-4 bg-white/5 border-white/10 backdrop-blur-md">
                       {c.avatar_url ? (
-                        <img src={c.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover border" />
+                        <img src={c.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover border border-white/10" />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center"><Users className="w-5 h-5 text-blue-400" /></div>
+                        <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center"><Users className="w-5 h-5 text-indigo-400" /></div>
                       )}
                       <div className="flex-1">
-                        <p className="font-semibold text-slate-900">{c.full_name}</p>
-                        <p className="text-xs text-slate-500">{c.job_title} · {c.location} · {c.years_of_experience ? `${c.years_of_experience} yrs exp` : ''}</p>
+                        <p className="font-semibold text-white">{c.full_name}</p>
+                        <p className="text-xs text-slate-400">{c.job_title} · {c.location} · {c.years_of_experience ? `${c.years_of_experience} yrs exp` : ''}</p>
                       </div>
-                      <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${c.open_to_work ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${c.open_to_work ? 'bg-emerald-500/10 text-emerald-400' : 'bg-white/5 text-slate-500'}`}>
                         {c.open_to_work ? 'Open to Work' : 'Not looking'}
                       </span>
                     </Card>
@@ -551,25 +555,25 @@ export default function AdminDashboard() {
           {/* Subscriptions */}
           {activeTab === 'subscriptions' && (
             <>
-              <h1 className="text-2xl font-bold text-slate-900 mb-6">Subscriptions</h1>
+              <h1 className="text-2xl font-bold text-white mb-6">Subscriptions</h1>
               <div className="grid sm:grid-cols-2 gap-4 mb-6">
-                <Card className="p-5">
-                  <p className="text-3xl font-bold text-slate-900">{companies.filter(c => c.subscription_plan === 'pro').length}</p>
-                  <p className="text-sm text-slate-500 mt-1">Pro Plan Companies</p>
+                <Card className="p-5 bg-white/5 border-white/10 backdrop-blur-md">
+                  <p className="text-3xl font-bold text-white">{companies.filter(c => c.subscription_plan === 'pro').length}</p>
+                  <p className="text-sm text-slate-400 mt-1">Pro Plan Companies</p>
                 </Card>
-                <Card className="p-5">
-                  <p className="text-3xl font-bold text-slate-900">{companies.filter(c => !c.subscription_plan || c.subscription_plan === 'free').length}</p>
-                  <p className="text-sm text-slate-500 mt-1">Free Plan Companies</p>
+                <Card className="p-5 bg-white/5 border-white/10 backdrop-blur-md">
+                  <p className="text-3xl font-bold text-white">{companies.filter(c => !c.subscription_plan || c.subscription_plan === 'free').length}</p>
+                  <p className="text-sm text-slate-400 mt-1">Free Plan Companies</p>
                 </Card>
               </div>
               <div className="space-y-3">
                 {companies.map(c => (
-                  <Card key={c.id} className="p-4 flex items-center gap-3">
+                  <Card key={c.id} className="p-4 flex items-center gap-3 bg-white/5 border-white/10 backdrop-blur-md">
                     <div className="flex-1">
-                      <p className="font-medium text-slate-900">{c.company_name}</p>
-                      <p className="text-xs text-slate-500">{c.recruiter_email}</p>
+                      <p className="font-medium text-white">{c.company_name}</p>
+                      <p className="text-xs text-slate-400">{c.recruiter_email}</p>
                     </div>
-                    <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${c.subscription_plan === 'pro' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>
+                    <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${c.subscription_plan === 'pro' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-white/5 text-slate-400'}`}>
                       {c.subscription_plan || 'free'}
                     </span>
                   </Card>
@@ -581,7 +585,7 @@ export default function AdminDashboard() {
           {/* Analytics */}
           {activeTab === 'analytics' && (
             <>
-              <h1 className="text-2xl font-bold text-slate-900 mb-6">Analytics</h1>
+              <h1 className="text-2xl font-bold text-white mb-6">Analytics</h1>
 
               {/* KPI cards */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -591,14 +595,14 @@ export default function AdminDashboard() {
                   { label: 'Total Applications', value: applications.length, color: 'bg-emerald-50 text-emerald-600', icon: FileText },
                   { label: 'Hiring Rate', value: `${hiringRate}%`, color: 'bg-green-50 text-green-600', icon: TrendingUp },
                 ].map(s => (
-                  <Card key={s.label} className="p-5">
+                  <Card key={s.label} className="p-5 bg-white/5 border-white/10 backdrop-blur-md">
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${s.color}`}>
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${s.color} bg-opacity-10`}>
                         <s.icon className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-slate-900">{s.value}</p>
-                        <p className="text-xs text-slate-500">{s.label}</p>
+                        <p className="text-2xl font-bold text-white">{s.value}</p>
+                        <p className="text-xs text-slate-400">{s.label}</p>
                       </div>
                     </div>
                   </Card>
@@ -606,15 +610,15 @@ export default function AdminDashboard() {
               </div>
 
               {/* Monthly Jobs & Applications chart */}
-              <Card className="p-5 mb-6">
-                <h2 className="font-semibold text-slate-900 mb-4">Monthly Job Openings & Applications</h2>
+              <Card className="p-5 mb-6 bg-white/5 border-white/10 backdrop-blur-md">
+                <h2 className="font-semibold text-white mb-4">Monthly Job Openings & Applications</h2>
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={monthlyData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                    <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip />
-                    <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                    <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                    <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }} />
+                    <Legend iconSize={10} wrapperStyle={{ fontSize: 11, color: '#94a3b8' }} />
                     <Bar dataKey="jobs" name="Job Openings" fill="#6366f1" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="applications" name="Applications" fill="#10b981" radius={[4, 4, 0, 0]} />
                   </BarChart>
@@ -623,22 +627,22 @@ export default function AdminDashboard() {
 
               <div className="grid lg:grid-cols-2 gap-6">
                 {/* Monthly hiring trend */}
-                <Card className="p-5">
-                  <h2 className="font-semibold text-slate-900 mb-4">Monthly Hiring Trend</h2>
+                <Card className="p-5 bg-white/5 border-white/10 backdrop-blur-md">
+                  <h2 className="font-semibold text-white mb-4">Monthly Hiring Trend</h2>
                   <ResponsiveContainer width="100%" height={180}>
                     <LineChart data={monthlyData} margin={{ top: 0, right: 10, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                      <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                      <YAxis tick={{ fontSize: 11 }} />
-                      <Tooltip />
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                      <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                      <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                      <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }} />
                       <Line type="monotone" dataKey="hired" name="Hired" stroke="#6366f1" strokeWidth={2} dot={{ r: 3 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </Card>
 
                 {/* Subscription breakdown */}
-                <Card className="p-5">
-                  <h2 className="font-semibold text-slate-900 mb-4">Subscription Statistics</h2>
+                <Card className="p-5 bg-white/5 border-white/10 backdrop-blur-md">
+                  <h2 className="font-semibold text-white mb-4">Subscription Statistics</h2>
                   <div className="flex items-center gap-4">
                     <ResponsiveContainer width="50%" height={160}>
                       <PieChart>
@@ -652,13 +656,13 @@ export default function AdminDashboard() {
                       {subscriptionData.map((s, i) => (
                         <div key={s.name} className="flex items-center gap-2">
                           <span className="w-3 h-3 rounded-full" style={{ background: COLORS[i] }} />
-                          <span className="text-sm text-slate-600">{s.name}</span>
-                          <span className="font-bold text-slate-900 ml-auto">{s.value}</span>
+                          <span className="text-sm text-slate-400">{s.name}</span>
+                          <span className="font-bold text-white ml-auto">{s.value}</span>
                         </div>
                       ))}
-                      <div className="pt-2 border-t">
+                      <div className="pt-2 border-t border-white/10">
                         <p className="text-xs text-slate-500">Total Active</p>
-                        <p className="font-bold text-lg text-slate-900">{companies.length}</p>
+                        <p className="font-bold text-lg text-white">{companies.length}</p>
                       </div>
                     </div>
                   </div>

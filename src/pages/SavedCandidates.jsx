@@ -52,19 +52,19 @@ export default function SavedCandidates() {
   if (isLoading) return <LoadingSpinner />;
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="bg-white border-b">
+    <div className="min-h-screen bg-transparent">
+      <div className="bg-white/5 backdrop-blur-md border-b border-white/10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
-          <Button variant="ghost" size="sm" className="mb-4 gap-2" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="sm" className="mb-4 gap-2 text-slate-400 hover:text-white" onClick={() => navigate(-1)}>
             <ArrowLeft className="w-4 h-4" /> Back
           </Button>
-          <h1 className="text-3xl font-bold text-slate-900">Saved Candidates</h1>
-          <p className="text-slate-500 mt-1">Your collection of favorite candidates</p>
+          <h1 className="text-3xl font-bold text-white">Saved Candidates</h1>
+          <p className="text-slate-400 mt-1">Your collection of favorite candidates</p>
         </div>
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        <p className="text-sm text-slate-500 mb-4">{candidates.length} candidate{candidates.length !== 1 ? 's' : ''} saved</p>
+        <p className="text-sm text-slate-400 mb-4">{candidates.length} candidate{candidates.length !== 1 ? 's' : ''} saved</p>
         {candidates.length === 0 ? (
           <EmptyState icon={Users} title="No saved candidates yet" description="Save candidates to view them here" />
         ) : (

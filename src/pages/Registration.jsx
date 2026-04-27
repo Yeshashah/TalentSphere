@@ -33,15 +33,15 @@ export default function Registration() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-orange-50/30 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-transparent px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="max-w-lg w-full"
       >
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">Join TalentHub</h1>
-          <p className="text-slate-500 mt-2">Choose your account type to get started</p>
+          <h1 className="text-3xl font-bold text-white">Join TalentSphere</h1>
+          <p className="text-slate-400 mt-2">Choose your account type to get started</p>
         </div>
 
         <div className="space-y-4">
@@ -49,21 +49,19 @@ export default function Registration() {
             <Card
               key={role.id}
               onClick={() => setSelected(role.id)}
-              className={`p-6 cursor-pointer transition-all duration-200 ${
-                selected === role.id
-                  ? 'ring-2 ring-indigo-500 border-indigo-200 bg-indigo-50/50'
-                  : 'hover:border-slate-300 hover:shadow-md'
-              }`}
+              className={`p-6 cursor-pointer transition-all duration-200 bg-white/5 backdrop-blur-md border-white/10 ${selected === role.id
+                  ? 'ring-2 ring-indigo-500 border-indigo-400 bg-indigo-500/10'
+                  : 'hover:bg-white/10 hover:border-white/20'
+                }`}
             >
               <div className="flex items-start gap-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                  selected === role.id ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-500'
-                }`}>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${selected === role.id ? 'bg-indigo-500 text-white' : 'bg-white/10 text-slate-400'
+                  }`}>
                   <role.icon className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-900">{role.title}</h3>
-                  <p className="text-sm text-slate-500 mt-1">{role.desc}</p>
+                  <h3 className="text-lg font-semibold text-white">{role.title}</h3>
+                  <p className="text-sm text-slate-400 mt-1">{role.desc}</p>
                 </div>
               </div>
             </Card>
@@ -78,9 +76,9 @@ export default function Registration() {
           Continue <ArrowRight className="w-4 h-4" />
         </Button>
 
-        <p className="text-center text-sm text-slate-500 mt-4">
+        <p className="text-center text-sm text-slate-400 mt-4">
           Already have an account?{' '}
-          <button onClick={() => navigate('/login')} className="text-indigo-500 hover:underline font-medium">
+          <button onClick={() => navigate('/login')} className="text-indigo-400 hover:underline font-medium">
             Sign In
           </button>
         </p>

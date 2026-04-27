@@ -110,16 +110,16 @@ export default function JobDetailPanel({ job }) {
     <div className="h-full overflow-y-auto p-6">
       {/* Header */}
       <div className="flex items-start gap-4 mb-4">
-        {job.company_logo ? (
-          <img src={job.company_logo} alt="" className="w-14 h-14 rounded-xl object-cover border" />
+        {job.display_logo ? (
+          <img src={job.display_logo} alt="" className="w-14 h-14 rounded-xl object-cover border border-white/10" />
         ) : (
-          <div className="w-14 h-14 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
+          <div className="w-14 h-14 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
             <Building2 className="w-7 h-7 text-indigo-400" />
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <h2 className="text-xl font-bold text-slate-900 leading-tight">{job.title}</h2>
-          <p className="text-slate-500 text-sm mt-0.5">{job.company_name}</p>
+          <h2 className="text-xl font-bold text-white leading-tight">{job.title}</h2>
+          <p className="text-slate-400 text-sm mt-0.5">{job.display_name}</p>
         </div>
       </div>
 
@@ -142,15 +142,15 @@ export default function JobDetailPanel({ job }) {
             size="icon"
             onClick={() => saveMutation.mutate()}
             disabled={!user || saveMutation.isPending}
-            className={isSaved ? 'text-indigo-600 border-indigo-300' : ''}
+            className={`border-white/10 ${isSaved ? 'text-indigo-400 border-indigo-500/50 bg-indigo-500/10' : 'text-slate-400'}`}
           >
-            {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
+            {isSaved ? <BookmarkCheck className="w-4 h-4 fill-current" /> : <Bookmark className="w-4 h-4" />}
           </Button>
         </div>
       </div>
 
       {/* Meta */}
-      <div className="flex flex-wrap gap-3 text-sm text-slate-500 mb-4 pb-4 border-b">
+      <div className="flex flex-wrap gap-3 text-sm text-slate-400 mb-4 pb-4 border-b border-white/10">
         {job.location && <span className="inline-flex items-center gap-1"><MapPin className="w-4 h-4" /> {job.location}</span>}
         {job.work_mode && <span className="inline-flex items-center gap-1"><Building2 className="w-4 h-4" /> {modeLabels[job.work_mode]}</span>}
         {job.employment_type && <span className="inline-flex items-center gap-1"><Clock className="w-4 h-4" /> {typeLabels[job.employment_type]}</span>}
@@ -166,7 +166,7 @@ export default function JobDetailPanel({ job }) {
       {/* Skills Required */}
       {job.skills_required?.length > 0 && (
         <div className="mb-5">
-          <h4 className="font-semibold text-slate-800 mb-2">Must Have Skills Required:</h4>
+          <h4 className="font-semibold text-white mb-2">Must Have Skills Required:</h4>
           <div className="flex flex-wrap gap-2">
             {job.skills_required.map(s => <SkillBadge key={s} skill={s} />)}
           </div>
@@ -176,36 +176,52 @@ export default function JobDetailPanel({ job }) {
       {/* Description */}
       {job.description && (
         <div className="mb-5">
-          <h4 className="font-semibold text-slate-800 mb-2">Description</h4>
-          <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-wrap">{job.description}</p>
+          <h4 className="font-semibold text-white mb-2">Description</h4>
+          <p className="text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">{job.description}</p>
         </div>
       )}
 
       {/* Responsibilities */}
       {job.responsibilities && (
         <div className="mb-5">
-          <h4 className="font-semibold text-slate-800 mb-2">Responsibilities</h4>
-          <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-wrap">{job.responsibilities}</p>
+          <h4 className="font-semibold text-white mb-2">Responsibilities</h4>
+          <p className="text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">{job.responsibilities}</p>
         </div>
       )}
 
       {/* Requirements */}
       {job.requirements && (
         <div className="mb-5">
-          <h4 className="font-semibold text-slate-800 mb-2">Requirements</h4>
-          <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-wrap">{job.requirements}</p>
+          <h4 className="font-semibold text-white mb-2">Requirements</h4>
+          <p className="text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">{job.requirements}</p>
         </div>
       )}
 
       {/* Benefits */}
       {job.benefits && (
         <div className="mb-5">
-          <h4 className="font-semibold text-slate-800 mb-2">Benefits</h4>
-          <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-wrap">{job.benefits}</p>
+          <h4 className="font-semibold text-white mb-2">Benefits</h4>
+          <p className="text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">{job.benefits}</p>
         </div>
       )}
 
-      <p className="text-xs text-slate-400 mt-4">
+      {/* About Company */}
+      {job.company_info?.description && (
+        <div className="mb-8 p-5 rounded-xl bg-white/5 border border-white/10">
+          <h4 className="font-semibold text-white mb-2 flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-indigo-400" />
+            About {job.display_name}
+          </h4>
+          <p className="text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">{job.company_info.description}</p>
+          {job.company_info.website && (
+            <a href={job.company_info.website} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 mt-3 font-medium">
+              Visit Website <ExternalLink className="w-3 h-3" />
+            </a>
+          )}
+        </div>
+      )}
+
+      <p className="text-xs text-slate-500 mt-4 italic">
         Posted {formatDistanceToNow(new Date(job.created_date), { addSuffix: true })}
         {job.application_deadline && ` · Deadline: ${job.application_deadline}`}
       </p>

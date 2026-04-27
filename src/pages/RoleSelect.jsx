@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { localClient } from '@/api/localClient';
+import { base44 as localClient } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Users, Building2, ArrowRight } from 'lucide-react';
@@ -68,7 +68,7 @@ export default function RoleSelect() {
         className="max-w-lg w-full"
       >
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">Welcome to TalentHub</h1>
+          <h1 className="text-3xl font-bold text-slate-900">Welcome to TalentSphere</h1>
           <p className="text-slate-500 mt-2">Tell us how you'd like to use the platform</p>
         </div>
 
@@ -77,16 +77,14 @@ export default function RoleSelect() {
             <Card
               key={role.id}
               onClick={() => setSelected(role.id)}
-              className={`p-6 cursor-pointer transition-all duration-200 ${
-                selected === role.id
+              className={`p-6 cursor-pointer transition-all duration-200 ${selected === role.id
                   ? 'ring-2 ring-indigo-500 border-indigo-200 bg-indigo-50/50'
                   : 'hover:border-slate-300 hover:shadow-md'
-              }`}
+                }`}
             >
               <div className="flex items-start gap-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                  selected === role.id ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-500'
-                }`}>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${selected === role.id ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-500'
+                  }`}>
                   <role.icon className="w-6 h-6" />
                 </div>
                 <div>

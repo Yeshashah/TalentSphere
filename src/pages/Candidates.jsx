@@ -109,9 +109,9 @@ export default function Candidates() {
 
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50">
+    <div className="flex flex-col h-screen bg-transparent">
       {/* Top bar */}
-      <div className="bg-white border-b px-4 sm:px-6 py-3 flex-shrink-0">
+      <div className="bg-white/5 backdrop-blur-md border-b border-white/10 px-4 sm:px-6 py-3 flex-shrink-0">
         <div className="max-w-7xl mx-auto">
           {/* Tabs */}
           <div className="flex items-center gap-6 mb-3">
@@ -122,7 +122,7 @@ export default function Candidates() {
               <button
                 key={tab.key}
                 onClick={() => { setActiveTab(tab.key); setSelectedCandidate(null); }}
-                className={`text-sm font-medium pb-1 border-b-2 transition-colors ${activeTab === tab.key ? 'border-yellow-400 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                className={`text-sm font-medium pb-1 border-b-2 transition-colors ${activeTab === tab.key ? 'border-indigo-400 text-white' : 'border-transparent text-slate-400 hover:text-white'}`}
               >
                 {tab.label}
               </button>
@@ -135,7 +135,7 @@ export default function Candidates() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input
                 placeholder="Search by name, title, skills..."
-                className="pl-9 h-9 rounded-lg text-sm"
+                className="pl-9 h-9 rounded-lg text-sm bg-white/5 border-white/10 text-white"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
@@ -150,9 +150,9 @@ export default function Candidates() {
         {/* Filter sidebar */}
         <CandidateFilters filters={filters} onChange={setFilters} />
         {/* Left: Candidate List */}
-        <div className="w-80 flex-shrink-0 border-r bg-white overflow-y-auto flex flex-col">
-          <div className="px-4 py-3 border-b flex items-center justify-between flex-shrink-0">
-            <span className="font-semibold text-slate-800 text-sm">
+        <div className="w-80 flex-shrink-0 border-r border-white/10 bg-white/5 backdrop-blur-md overflow-y-auto flex flex-col">
+          <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between flex-shrink-0">
+            <span className="font-semibold text-white text-sm">
               {activeTab === 'saved' ? 'Saved Candidates' : 'All Candidates'}
             </span>
             <span className="text-xs text-slate-400">{filtered.length} Result{filtered.length !== 1 ? 's' : ''}</span>
@@ -168,7 +168,7 @@ export default function Candidates() {
                 <button
                   key={c.id}
                   onClick={() => setSelectedCandidate(c)}
-                  className={`w-full text-left p-4 border-b transition-colors hover:bg-slate-50 ${selectedCandidate?.id === c.id ? 'bg-indigo-50 border-l-2 border-l-indigo-500' : ''}`}
+                  className={`w-full text-left p-4 border-b border-white/5 transition-colors hover:bg-white/5 ${selectedCandidate?.id === c.id ? 'bg-white/10' : ''}`}
                 >
                   <div className="flex items-start gap-3">
                     {c.avatar_url ? (
@@ -180,10 +180,10 @@ export default function Candidates() {
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-1">
-                        <p className="text-sm font-semibold text-slate-900 truncate leading-snug">{c.full_name}</p>
-                        {savedCandidateIds.has(c.id) && <Bookmark className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0 mt-0.5 fill-indigo-500" />}
+                        <p className="text-sm font-semibold text-white truncate leading-snug">{c.full_name}</p>
+                        {savedCandidateIds.has(c.id) && <Bookmark className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0 mt-0.5 fill-indigo-400" />}
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">{c.job_title}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{c.job_title}</p>
                       <div className="flex items-center gap-2 mt-1 text-xs text-slate-400">
                         {c.location && <span className="inline-flex items-center gap-0.5"><MapPin className="w-3 h-3" />{c.location}</span>}
                         {c.years_of_experience != null && <span className="inline-flex items-center gap-0.5"><Briefcase className="w-3 h-3" />{c.years_of_experience}y</span>}
@@ -202,12 +202,12 @@ export default function Candidates() {
 
           {/* Pagination */}
           {!isLoading && filtered.length > 0 && activeTab === 'all' && (
-            <div className="flex items-center justify-center gap-2 p-3 border-t flex-shrink-0">
-              <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => { setPage(Math.max(0, page - 1)); setSelectedCandidate(null); }} disabled={page === 0}>
+            <div className="flex items-center justify-center gap-2 p-3 border-t border-white/10 flex-shrink-0">
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-white" onClick={() => { setPage(Math.max(0, page - 1)); setSelectedCandidate(null); }} disabled={page === 0}>
                 <ChevronLeft className="w-3 h-3" />
               </Button>
               <span className="text-xs text-slate-500">Page {page + 1}</span>
-              <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => { setPage(page + 1); setSelectedCandidate(null); }} disabled={candidates.length < pageSize}>
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-white" onClick={() => { setPage(page + 1); setSelectedCandidate(null); }} disabled={candidates.length < pageSize}>
                 <ChevronRight className="w-3 h-3" />
               </Button>
             </div>
@@ -215,11 +215,11 @@ export default function Candidates() {
         </div>
 
         {/* Right: Detail */}
-        <div className="flex-1 overflow-hidden bg-white">
+        <div className="flex-1 overflow-hidden bg-white/5 backdrop-blur-md">
           {selectedCandidate ? (
             <CandidateDetailPanel key={selectedCandidate.id} candidate={selectedCandidate} />
           ) : (
-            <div className="flex items-center justify-center h-full text-slate-400">
+            <div className="flex items-center justify-center h-full text-slate-500">
               <div className="text-center">
                 <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
                 <p>Select a candidate to view profile</p>

@@ -34,12 +34,35 @@ export default function Jobs() {
     queryFn: () => base44.auth.me().catch(() => null),
   });
 
-  const { data: jobs = [], isLoading: displayLoading } = useQuery({
+  const { data: jobs = [], isLoading: jobsLoading } = useQuery({
     queryKey: ['jobs'],
     queryFn: () => base44.entities.Job.filter({ status: 'open', approval_status: 'approved' }, '-created_date'),
   });
 
-  const displayJobs = jobs;
+  const { data: companies = [], isLoading: companiesLoading } = useQuery({
+    queryKey: ['company-profiles'],
+    queryFn: () => base44.entities.CompanyProfile.all(),
+  });
+
+  const companyMap = useMemo(() => {
+    const map = {};
+    companies.forEach(c => {
+      if (c.user_email) map[c.user_email] = c;
+    });
+    return map;
+  }, [companies]);
+
+  const displayLoading = jobsLoading || companiesLoading;
+
+  const displayJobs = useMemo(() => {
+    return jobs.map(j => ({
+      ...j,
+      company_info: companyMap[j.company_email] || null,
+      // Fallback to job entity fields if company profile not found
+      display_logo: companyMap[j.company_email]?.logo_url || j.company_logo,
+      display_name: companyMap[j.company_email]?.company_name || j.company_name
+    }));
+  }, [jobs, companyMap]);
 
   const { data: savedItems = [] } = useQuery({
     queryKey: ['saved-jobs', user?.email],
@@ -112,9 +135,9 @@ export default function Jobs() {
 
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50">
+    <div className="flex flex-col h-screen bg-transparent">
       {/* Top bar */}
-      <div className="bg-white border-b px-4 sm:px-6 py-3 flex-shrink-0">
+      <div className="bg-black/20 backdrop-blur-md border-b border-white/10 px-4 sm:px-6 py-3 flex-shrink-0">
         <div className="max-w-7xl mx-auto">
           {/* Tabs */}
           <div className="flex items-center gap-6 mb-3">
@@ -127,7 +150,7 @@ export default function Jobs() {
               <button
                 key={tab.key}
                 onClick={() => { setActiveTab(tab.key); setSelectedJob(null); }}
-                className={`text-sm font-medium pb-1 border-b-2 transition-colors ${activeTab === tab.key ? 'border-yellow-400 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                className={`text-sm font-medium pb-1 border-b-2 transition-colors ${activeTab === tab.key ? 'border-indigo-400 text-white' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
               >
                 {tab.label}
               </button>
@@ -140,7 +163,7 @@ export default function Jobs() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input
                 placeholder="Search Opportunities"
-                className="pl-9 h-9 rounded-lg text-sm"
+                className="pl-9 h-9 rounded-lg text-sm bg-white/5 border-white/10 text-white placeholder:text-slate-500"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
@@ -153,10 +176,10 @@ export default function Jobs() {
       <div className="flex flex-1 overflow-hidden max-w-7xl mx-auto w-full">
         {activeTab !== 'track' && <JobFilters filters={filters} onChange={setFilters} />}
         {/* Left: Job List */}
-        {activeTab !== 'track' && <div className="w-80 flex-shrink-0 border-r bg-white overflow-y-auto">
-          <div className="px-4 py-3 border-b flex items-center justify-between">
+        {activeTab !== 'track' && <div className="w-80 flex-shrink-0 border-r border-white/10 bg-black/20 backdrop-blur-xl overflow-y-auto">
+          <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-slate-800 text-sm">
+              <span className="font-semibold text-slate-200 text-sm">
                 {activeTab === 'jobs' ? 'All Jobs' : activeTab === 'saved' ? 'Saved Jobs' : 'Applied Jobs'}
               </span>
             </div>
@@ -173,22 +196,22 @@ export default function Jobs() {
                 <button
                   key={job.id}
                   onClick={() => setSelectedJob(job)}
-                  className={`w-full text-left p-4 border-b transition-colors hover:bg-slate-50 ${selectedJob?.id === job.id ? 'bg-indigo-50 border-l-2 border-l-indigo-500' : ''}`}
+                  className={`w-full text-left p-4 border-b border-white/5 transition-colors hover:bg-white/5 ${selectedJob?.id === job.id ? 'bg-indigo-500/10 border-l-2 border-l-indigo-500' : ''}`}
                 >
                   <div className="flex items-start gap-3">
-                    {job.company_logo ? (
-                      <img src={job.company_logo} alt="" className="w-9 h-9 rounded-lg object-cover border flex-shrink-0" />
+                    {job.display_logo ? (
+                      <img src={job.display_logo} alt="" className="w-9 h-9 rounded-lg object-cover border border-white/10 flex-shrink-0" />
                     ) : (
-                      <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                      <div className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
                         <Building2 className="w-4 h-4 text-indigo-400" />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-1">
-                        <p className="text-sm font-semibold text-slate-900 truncate leading-snug">{job.title}</p>
-                        {savedJobIds.has(job.id) && <Bookmark className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0 mt-0.5 fill-indigo-500" />}
+                        <p className="text-sm font-semibold text-white truncate leading-snug">{job.title}</p>
+                        {savedJobIds.has(job.id) && <Bookmark className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0 mt-0.5 fill-current" />}
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">{job.company_name}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{job.display_name}</p>
                       <div className="flex items-center gap-2 mt-1.5 text-xs text-slate-400">
                         <span className="inline-flex items-center gap-0.5"><MapPin className="w-3 h-3" />{job.location || job.work_mode && modeLabels[job.work_mode]}</span>
                       </div>
@@ -207,7 +230,7 @@ export default function Jobs() {
         </div>}
 
         {/* Right: Job Detail */}
-        <div className="flex-1 overflow-hidden bg-white">
+        <div className="flex-1 overflow-hidden bg-black/5 backdrop-blur-sm">
           {activeTab === 'track' ? (
             <ApplicationTracker />
           ) : activeTab === 'applied' && selectedJob ? (

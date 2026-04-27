@@ -74,26 +74,26 @@ export default function CandidateDetail() {
   if (!candidate) return <div className="p-8 text-center text-slate-500">Candidate not found</div>;
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8">
+    <div className="min-h-screen bg-transparent py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        <Button variant="ghost" size="sm" className="mb-4 gap-2" onClick={() => navigate(-1)}>
+        <Button variant="ghost" size="sm" className="mb-4 gap-2 text-slate-400 hover:text-white" onClick={() => navigate(-1)}>
           <ArrowLeft className="w-4 h-4" /> Back
         </Button>
 
-        <Card className="p-8">
+        <Card className="p-8 bg-white/5 border-white/10 backdrop-blur-md">
           <div className="flex items-start gap-5 mb-6">
             {candidate.avatar_url ? (
-              <img src={candidate.avatar_url} alt="" className="w-20 h-20 rounded-2xl object-cover border-2 border-white shadow" />
+              <img src={candidate.avatar_url} alt="" className="w-20 h-20 rounded-2xl object-cover border-2 border-white/20 shadow-xl" />
             ) : (
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center">
-                <User className="w-10 h-10 text-indigo-500" />
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-indigo-500/40 border border-white/10 flex items-center justify-center">
+                <User className="w-10 h-10 text-indigo-400" />
               </div>
             )}
             <div className="flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl font-bold text-slate-900">{candidate.full_name}</h1>
+                <h1 className="text-2xl font-bold text-white">{candidate.full_name}</h1>
               </div>
-              <p className="text-lg text-slate-500 mt-1">{candidate.job_title}</p>
+              <p className="text-lg text-slate-400 mt-1">{candidate.job_title}</p>
               <div className="flex flex-wrap gap-3 mt-3">
                 {candidate.location && <span className="inline-flex items-center gap-1 text-sm text-slate-500"><MapPin className="w-4 h-4" /> {candidate.location}</span>}
                 {candidate.years_of_experience != null && <span className="inline-flex items-center gap-1 text-sm text-slate-500"><Briefcase className="w-4 h-4" /> {candidate.years_of_experience} years exp</span>}
@@ -132,47 +132,47 @@ export default function CandidateDetail() {
 
           {candidate.bio && (
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-slate-900 mb-2">About</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">{candidate.bio}</p>
+              <h3 className="text-sm font-semibold text-white mb-2">About</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">{candidate.bio}</p>
             </div>
           )}
 
           {candidate.skills?.length > 0 && (
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-slate-900 mb-2">Skills</h3>
+              <h3 className="text-sm font-semibold text-white mb-2">Skills</h3>
               <div className="flex flex-wrap gap-2">{candidate.skills.map(s => <SkillBadge key={s} skill={s} />)}</div>
             </div>
           )}
 
           {candidate.tech_stack?.length > 0 && (
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-slate-900 mb-2">Tech Stack</h3>
+              <h3 className="text-sm font-semibold text-white mb-2">Tech Stack</h3>
               <div className="flex flex-wrap gap-2">{candidate.tech_stack.map(s => <SkillBadge key={s} skill={s} />)}</div>
             </div>
           )}
 
           {candidate.employment_type_preference?.length > 0 && (
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-slate-900 mb-2">Employment Preferences</h3>
-              <div className="flex flex-wrap gap-2">{candidate.employment_type_preference.map(t => <Badge key={t} variant="outline">{empLabels[t] || t}</Badge>)}</div>
+              <h3 className="text-sm font-semibold text-white mb-2">Employment Preferences</h3>
+              <div className="flex flex-wrap gap-2">{candidate.employment_type_preference.map(t => <Badge key={t} variant="outline" className="border-white/10 text-slate-400">{empLabels[t] || t}</Badge>)}</div>
             </div>
           )}
 
           <div className="grid sm:grid-cols-2 gap-4 mb-6">
             {candidate.education_degree && (
               <div className="flex items-start gap-3">
-                <GraduationCap className="w-5 h-5 text-slate-400 mt-0.5" />
+                <GraduationCap className="w-5 h-5 text-slate-500 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-slate-900">{candidate.education_degree}</p>
+                  <p className="text-sm font-medium text-white">{candidate.education_degree}</p>
                   <p className="text-xs text-slate-500">{candidate.education_university} {candidate.graduation_year && `· ${candidate.graduation_year}`}</p>
                 </div>
               </div>
             )}
             {candidate.availability && (
               <div className="flex items-start gap-3">
-                <Clock className="w-5 h-5 text-slate-400 mt-0.5" />
+                <Clock className="w-5 h-5 text-slate-500 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-slate-900">Availability</p>
+                  <p className="text-sm font-medium text-white">Availability</p>
                   <p className="text-xs text-slate-500">{availLabels[candidate.availability]}</p>
                 </div>
               </div>
@@ -182,17 +182,17 @@ export default function CandidateDetail() {
           <div className="flex flex-wrap gap-3 mt-6">
             {candidate.linkedin && (
               <a href={candidate.linkedin} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" size="sm" className="gap-2"><ExternalLink className="w-3 h-3" /> LinkedIn</Button>
+                <Button variant="outline" size="sm" className="gap-2 border-white/10 text-white hover:bg-white/10"><ExternalLink className="w-3 h-3" /> LinkedIn</Button>
               </a>
             )}
             {candidate.portfolio && (
               <a href={candidate.portfolio} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" size="sm" className="gap-2"><ExternalLink className="w-3 h-3" /> Portfolio</Button>
+                <Button variant="outline" size="sm" className="gap-2 border-white/10 text-white hover:bg-white/10"><ExternalLink className="w-3 h-3" /> Portfolio</Button>
               </a>
             )}
             {candidate.resume_url && (
               <a href={candidate.resume_url} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" size="sm" className="gap-2"><ExternalLink className="w-3 h-3" /> Resume</Button>
+                <Button variant="outline" size="sm" className="gap-2 border-white/10 text-white hover:bg-white/10"><ExternalLink className="w-3 h-3" /> Resume</Button>
               </a>
             )}
           </div>

@@ -79,32 +79,37 @@ export default function EditCandidateProfile() {
   if (isLoading) return <LoadingSpinner />;
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8">
+    <div className="min-h-screen bg-transparent py-8">
       <div className="max-w-2xl mx-auto px-4 sm:px-6">
-        <h1 className="text-2xl font-bold text-slate-900 mb-6">Edit Profile</h1>
+        <h1 className="text-2xl font-bold text-white mb-6">Edit Profile</h1>
 
         <div className="space-y-6">
           {/* Personal */}
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">Personal Info</h2>
+          <Card className="p-6 bg-white/5 border-white/10 backdrop-blur-md">
+            <h2 className="text-lg font-semibold text-white mb-4">Personal Info</h2>
             <div className="grid sm:grid-cols-2 gap-4">
-              <div><Label>Full Name</Label><Input value={form.full_name || ''} onChange={e => update('full_name', e.target.value)} /></div>
-              <div><Label>Phone</Label><Input value={form.phone || ''} onChange={e => update('phone', e.target.value)} /></div>
-              <div><Label>Location</Label><Input value={form.location || ''} onChange={e => update('location', e.target.value)} placeholder="City, Country" /></div>
-              <div><Label>LinkedIn</Label><Input value={form.linkedin || ''} onChange={e => update('linkedin', e.target.value)} placeholder="https://linkedin.com/in/..." /></div>
-              <div className="sm:col-span-2"><Label>Portfolio / GitHub</Label><Input value={form.portfolio || ''} onChange={e => update('portfolio', e.target.value)} /></div>
-              <div className="sm:col-span-2"><Label>Bio</Label><Textarea value={form.bio || ''} onChange={e => update('bio', e.target.value)} placeholder="Tell us about yourself..." /></div>
+              <div>
+                <Label className="text-slate-300">Full Name</Label>
+                <Input className="bg-white/5 border-white/10 text-white" 
+                      value={form.full_name || ''} 
+                      onChange={e => update('full_name', e.target.value)}/>
+              </div>
+              <div><Label className="text-slate-300">Phone</Label><Input className="bg-white/5 border-white/10 text-white" value={form.phone || ''} onChange={e => update('phone', e.target.value)} /></div>
+              <div><Label className="text-slate-300">Location</Label><Input className="bg-white/5 border-white/10 text-white" value={form.location || ''} onChange={e => update('location', e.target.value)} placeholder="City, Country" /></div>
+              <div><Label className="text-slate-300">LinkedIn</Label><Input className="bg-white/5 border-white/10 text-white" value={form.linkedin || ''} onChange={e => update('linkedin', e.target.value)} placeholder="https://linkedin.com/in/..." /></div>
+              <div className="sm:col-span-2"><Label className="text-slate-300">Portfolio / GitHub</Label><Input className="bg-white/5 border-white/10 text-white" value={form.portfolio || ''} onChange={e => update('portfolio', e.target.value)} /></div>
+              <div className="sm:col-span-2"><Label className="text-slate-300">Bio</Label><Textarea className="bg-white/5 border-white/10 text-white" value={form.bio || ''} onChange={e => update('bio', e.target.value)} placeholder="Tell us about yourself..." /></div>
             </div>
           </Card>
 
           {/* Professional */}
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">Professional Info</h2>
+          <Card className="p-6 bg-white/5 border-white/10 backdrop-blur-md">
+            <h2 className="text-lg font-semibold text-white mb-4">Professional Info</h2>
             <div className="grid sm:grid-cols-2 gap-4">
-              <div><Label>Job Title</Label><Input value={form.job_title || ''} onChange={e => update('job_title', e.target.value)} /></div>
-              <div><Label>Years of Experience</Label><Input type="number" value={form.years_of_experience || ''} onChange={e => update('years_of_experience', Number(e.target.value))} /></div>
-              <div><Label>Industry</Label><Input value={form.industry || ''} onChange={e => update('industry', e.target.value)} /></div>
-              <div><Label>Expected Salary ($)</Label><Input type="number" value={form.expected_salary || ''} onChange={e => update('expected_salary', Number(e.target.value))} /></div>
+              <div><Label className="text-slate-300">Job Title</Label><Input className="bg-white/5 border-white/10 text-white" value={form.job_title || ''} onChange={e => update('job_title', e.target.value)} /></div>
+              <div><Label className="text-slate-300">Years of Experience</Label><Input className="bg-white/5 border-white/10 text-white" type="number" value={form.years_of_experience || ''} onChange={e => update('years_of_experience', Number(e.target.value))} /></div>
+              <div><Label className="text-slate-300">Industry</Label><Input className="bg-white/5 border-white/10 text-white" value={form.industry || ''} onChange={e => update('industry', e.target.value)} /></div>
+              <div><Label className="text-slate-300">Expected Salary ($)</Label><Input className="bg-white/5 border-white/10 text-white" type="number" value={form.expected_salary || ''} onChange={e => update('expected_salary', Number(e.target.value))} /></div>
             </div>
             <div className="mt-4">
               <Label>Skills</Label>
@@ -114,9 +119,9 @@ export default function EditCandidateProfile() {
               </div>
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {form.skills?.map(s => (
-                  <span key={s} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-700 text-xs font-medium">
+                  <span key={s} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-slate-300 text-xs font-medium">
                     {s}
-                    <button onClick={() => setForm(f => ({ ...f, skills: f.skills.filter(x => x !== s) }))} className="hover:text-indigo-900">×</button>
+                    <button onClick={() => setForm(f => ({ ...f, skills: f.skills.filter(x => x !== s) }))} className="hover:text-white transition-colors">×</button>
                   </span>
                 ))}
               </div>
@@ -129,9 +134,9 @@ export default function EditCandidateProfile() {
               </div>
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {form.tech_stack?.map(s => (
-                  <span key={s} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-medium">
+                  <span key={s} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-slate-300 text-xs font-medium">
                     {s}
-                    <button onClick={() => setForm(f => ({ ...f, tech_stack: f.tech_stack.filter(x => x !== s) }))} className="hover:text-slate-900">×</button>
+                    <button onClick={() => setForm(f => ({ ...f, tech_stack: f.tech_stack.filter(x => x !== s) }))} className="hover:text-white transition-colors">×</button>
                   </span>
                 ))}
               </div>
@@ -139,24 +144,24 @@ export default function EditCandidateProfile() {
           </Card>
 
           {/* Education */}
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">Education</h2>
+          <Card className="p-6 bg-white/5 border-white/10 backdrop-blur-md">
+            <h2 className="text-lg font-semibold text-white mb-4">Education</h2>
             <div className="grid sm:grid-cols-3 gap-4">
-              <div><Label>Degree</Label><Input value={form.education_degree || ''} onChange={e => update('education_degree', e.target.value)} /></div>
-              <div><Label>University</Label><Input value={form.education_university || ''} onChange={e => update('education_university', e.target.value)} /></div>
-              <div><Label>Graduation Year</Label><Input type="number" value={form.graduation_year || ''} onChange={e => update('graduation_year', Number(e.target.value))} /></div>
+              <div><Label className="text-slate-300">Degree</Label><Input className="bg-white/5 border-white/10 text-white" value={form.education_degree || ''} onChange={e => update('education_degree', e.target.value)} /></div>
+              <div><Label className="text-slate-300">University</Label><Input className="bg-white/5 border-white/10 text-white" value={form.education_university || ''} onChange={e => update('education_university', e.target.value)} /></div>
+              <div><Label className="text-slate-300">Graduation Year</Label><Input className="bg-white/5 border-white/10 text-white" type="number" value={form.graduation_year || ''} onChange={e => update('graduation_year', Number(e.target.value))} /></div>
             </div>
           </Card>
 
           {/* Settings */}
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">Preferences</h2>
+          <Card className="p-6 bg-white/5 border-white/10 backdrop-blur-md">
+            <h2 className="text-lg font-semibold text-white mb-4">Preferences</h2>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <Label>Availability</Label>
+                <Label className="text-slate-300">Availability</Label>
                 <Select value={form.availability || ''} onValueChange={v => update('availability', v)}>
-                  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                  <SelectContent>
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue placeholder="Select..." /></SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-white/10 text-white">
                     <SelectItem value="immediate">Immediate</SelectItem>
                     <SelectItem value="2_weeks">2 weeks</SelectItem>
                     <SelectItem value="1_month">1 month</SelectItem>
@@ -166,14 +171,14 @@ export default function EditCandidateProfile() {
                 </Select>
               </div>
               <div>
-                <Label>Notice Period</Label>
-                <Input value={form.notice_period || ''} onChange={e => update('notice_period', e.target.value)} placeholder="e.g., 2 weeks" />
+                <Label className="text-slate-300">Notice Period</Label>
+                <Input className="bg-white/5 border-white/10 text-white" value={form.notice_period || ''} onChange={e => update('notice_period', e.target.value)} placeholder="e.g., 2 weeks" />
               </div>
               <div>
-                <Label>Profile Visibility</Label>
+                <Label className="text-slate-300">Profile Visibility</Label>
                 <Select value={form.visibility || 'public'} onValueChange={v => update('visibility', v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-white/10 text-white">
                     <SelectItem value="public">Public</SelectItem>
                     <SelectItem value="companies_only">Companies Only</SelectItem>
                     <SelectItem value="private">Private</SelectItem>
@@ -182,17 +187,17 @@ export default function EditCandidateProfile() {
               </div>
               <div className="flex items-center gap-3">
                 <Switch checked={form.open_to_work ?? true} onCheckedChange={v => update('open_to_work', v)} />
-                <Label>Open to work</Label>
+                <Label className="text-slate-300">Open to work</Label>
               </div>
             </div>
             <div className="mt-4">
-              <Label>Resume</Label>
+              <Label className="text-slate-300">Resume</Label>
               <div className="flex items-center gap-3 mt-1">
                 <label className="cursor-pointer">
                   <input type="file" accept=".pdf" className="hidden" onChange={handleFileUpload} />
-                  <Button variant="outline" size="sm" className="gap-2" asChild><span><Upload className="w-4 h-4" /> Upload PDF</span></Button>
+                  <Button variant="outline" size="sm" className="gap-2 border-white/10 text-white hover:bg-white/10" asChild><span><Upload className="w-4 h-4" /> Upload PDF</span></Button>
                 </label>
-                {form.resume_url && <span className="text-xs text-emerald-600">Resume uploaded ✓</span>}
+                {form.resume_url && <span className="text-xs text-emerald-400">Resume uploaded ✓</span>}
               </div>
             </div>
           </Card>

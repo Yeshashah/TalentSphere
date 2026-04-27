@@ -12,22 +12,22 @@ const availabilityLabels = {
 export default function CandidateCard({ candidate }) {
   return (
     <Link to={`/CandidateDetail?id=${candidate.id}`}>
-      <Card className="p-6 hover:shadow-lg hover:border-indigo-100 transition-all duration-300 cursor-pointer group">
+      <Card className="p-6 bg-white/5 border-white/10 backdrop-blur-md hover:bg-white/10 hover:border-white/20 transition-all duration-300 cursor-pointer group">
         <div className="flex items-start gap-4">
           {candidate.avatar_url ? (
-            <img src={candidate.avatar_url} alt="" className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-sm" />
+            <img src={candidate.avatar_url} alt="" className="w-14 h-14 rounded-full object-cover border-2 border-white/20 shadow-xl" />
           ) : (
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center">
-              <User className="w-6 h-6 text-indigo-500" />
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500/20 to-indigo-500/40 border border-white/10 flex items-center justify-center">
+              <User className="w-6 h-6 text-indigo-400" />
             </div>
           )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors truncate">
+              <h3 className="font-semibold text-white group-hover:text-indigo-400 transition-colors truncate">
                 {candidate.full_name || candidate.name}
               </h3>
             </div>
-            <p className="text-sm text-slate-500 mt-0.5">{candidate.job_title || candidate.headline}</p>
+            <p className="text-sm text-slate-400 mt-0.5">{candidate.job_title || candidate.headline}</p>
 
             <div className="flex flex-wrap items-center gap-3 mt-2">
               {candidate.location && (
@@ -41,7 +41,7 @@ export default function CandidateCard({ candidate }) {
                 </span>
               )}
               {candidate.availability && (
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="text-xs border-white/10 text-slate-400">
                   {availabilityLabels[candidate.availability] || candidate.availability}
                 </Badge>
               )}
@@ -50,10 +50,10 @@ export default function CandidateCard({ candidate }) {
             {candidate.skills?.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-3">
                 {candidate.skills.slice(0, 5).map(s => (
-                  <Badge key={s} variant="secondary" className="text-xs bg-indigo-50 text-indigo-600 border-0">{s}</Badge>
+                  <Badge key={s} variant="secondary" className="text-xs bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">{s}</Badge>
                 ))}
                 {candidate.skills.length > 5 && (
-                  <Badge variant="secondary" className="text-xs">+{candidate.skills.length - 5}</Badge>
+                  <Badge variant="secondary" className="text-xs bg-white/5 text-slate-400 border border-white/10">+{candidate.skills.length - 5}</Badge>
                 )}
               </div>
             )}

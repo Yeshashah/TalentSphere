@@ -83,21 +83,21 @@ export default function PostJob() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8">
+    <div className="min-h-screen bg-transparent py-8">
       <div className="max-w-2xl mx-auto px-4 sm:px-6">
-        <h1 className="text-2xl font-bold text-slate-900 mb-6">{jobId ? 'Edit Job' : 'Post a Job'}</h1>
+        <h1 className="text-2xl font-bold text-white mb-6">{jobId ? 'Edit Job' : 'Post a Job'}</h1>
 
         <div className="space-y-6">
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">Basic Info</h2>
+          <Card className="p-6 bg-white/5 border-white/10 backdrop-blur-md">
+            <h2 className="text-lg font-semibold text-white mb-4">Basic Info</h2>
             <div className="grid sm:grid-cols-2 gap-4">
-              <div className="sm:col-span-2"><Label>Job Title</Label><Input value={form.title || ''} onChange={e => update('title', e.target.value)} placeholder="e.g., Senior Frontend Engineer" /></div>
-              <div><Label>Department</Label><Input value={form.department || ''} onChange={e => update('department', e.target.value)} /></div>
+              <div className="sm:col-span-2"><Label className="text-slate-300">Job Title</Label><Input className="bg-white/5 border-white/10 text-white" value={form.title || ''} onChange={e => update('title', e.target.value)} placeholder="e.g., Senior Frontend Engineer" /></div>
+              <div><Label className="text-slate-300">Department</Label><Input className="bg-white/5 border-white/10 text-white" value={form.department || ''} onChange={e => update('department', e.target.value)} /></div>
               <div>
-                <Label>Employment Type</Label>
+                <Label className="text-slate-300">Employment Type</Label>
                 <Select value={form.employment_type || ''} onValueChange={v => update('employment_type', v)}>
-                  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                  <SelectContent>
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue placeholder="Select..." /></SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-white/10 text-white">
                     <SelectItem value="full_time">Full-time</SelectItem>
                     <SelectItem value="part_time">Part-time</SelectItem>
                     <SelectItem value="contract">Contract</SelectItem>
@@ -107,22 +107,22 @@ export default function PostJob() {
                 </Select>
               </div>
               <div>
-                <Label>Country</Label>
-                <Input value={form.country || ''} onChange={e => update('country', e.target.value)} placeholder="e.g., United States" />
+                <Label className="text-slate-300">Country</Label>
+                <Input className="bg-white/5 border-white/10 text-white" value={form.country || ''} onChange={e => update('country', e.target.value)} placeholder="e.g., United States" />
               </div>
               <div>
-                <Label>State / Province</Label>
-                <Input value={form.state || ''} onChange={e => update('state', e.target.value)} placeholder="e.g., California" />
+                <Label className="text-slate-300">State / Province</Label>
+                <Input className="bg-white/5 border-white/10 text-white" value={form.state || ''} onChange={e => update('state', e.target.value)} placeholder="e.g., California" />
               </div>
               <div>
-                <Label>City</Label>
-                <Input value={form.city || ''} onChange={e => update('city', e.target.value)} placeholder="e.g., San Francisco" />
+                <Label className="text-slate-300">City</Label>
+                <Input className="bg-white/5 border-white/10 text-white" value={form.city || ''} onChange={e => update('city', e.target.value)} placeholder="e.g., San Francisco" />
               </div>
               <div>
-                <Label>Job Level</Label>
+                <Label className="text-slate-300">Job Level</Label>
                 <Select value={form.job_level || ''} onValueChange={v => update('job_level', v)}>
-                  <SelectTrigger><SelectValue placeholder="Select level..." /></SelectTrigger>
-                  <SelectContent>
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue placeholder="Select level..." /></SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-white/10 text-white">
                     <SelectItem value="entry">Entry</SelectItem>
                     <SelectItem value="mid">Mid</SelectItem>
                     <SelectItem value="senior">Senior</SelectItem>
@@ -132,24 +132,24 @@ export default function PostJob() {
                 </Select>
               </div>
               <div>
-                <Label>Number of Openings</Label>
-                <Input type="number" min="1" value={form.num_openings || ''} onChange={e => update('num_openings', Number(e.target.value))} placeholder="e.g., 2" />
+                <Label className="text-slate-300">Number of Openings</Label>
+                <Input className="bg-white/5 border-white/10 text-white" type="number" min="1" value={form.num_openings || ''} onChange={e => update('num_openings', Number(e.target.value))} placeholder="e.g., 2" />
               </div>
               <div>
-                <Label>Remote Eligible</Label>
+                <Label className="text-slate-300">Remote Eligible</Label>
                 <Select value={form.remote_eligible != null ? String(form.remote_eligible) : ''} onValueChange={v => update('remote_eligible', v === 'true')}>
-                  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                  <SelectContent>
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue placeholder="Select..." /></SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-white/10 text-white">
                     <SelectItem value="true">Yes</SelectItem>
                     <SelectItem value="false">No</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label>Work Mode</Label>
+                <Label className="text-slate-300">Work Mode</Label>
                 <Select value={form.work_mode || ''} onValueChange={v => update('work_mode', v)}>
-                  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                  <SelectContent>
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue placeholder="Select..." /></SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-white/10 text-white">
                     <SelectItem value="remote">Remote</SelectItem>
                     <SelectItem value="hybrid">Hybrid</SelectItem>
                     <SelectItem value="onsite">Onsite</SelectItem>
@@ -159,25 +159,25 @@ export default function PostJob() {
             </div>
           </Card>
 
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">Job Details</h2>
+          <Card className="p-6 bg-white/5 border-white/10 backdrop-blur-md">
+            <h2 className="text-lg font-semibold text-white mb-4">Job Details</h2>
             <div className="space-y-4">
-              <div><Label>Description</Label><Textarea value={form.description || ''} onChange={e => update('description', e.target.value)} className="min-h-[100px]" /></div>
-              <div><Label>Responsibilities</Label><Textarea value={form.responsibilities || ''} onChange={e => update('responsibilities', e.target.value)} className="min-h-[100px]" /></div>
-              <div><Label>Requirements</Label><Textarea value={form.requirements || ''} onChange={e => update('requirements', e.target.value)} className="min-h-[100px]" /></div>
-              <div><Label>Experience Required (years)</Label><Input type="number" value={form.experience_required || ''} onChange={e => update('experience_required', Number(e.target.value))} /></div>
-              <div><Label>Certifications Required (if any)</Label><Input value={form.certifications_required || ''} onChange={e => update('certifications_required', e.target.value)} placeholder="e.g., AWS Certified, PMP" /></div>
+              <div><Label className="text-slate-300">Description</Label><Textarea className="bg-white/5 border-white/10 text-white" value={form.description || ''} onChange={e => update('description', e.target.value)} className="min-h-[100px]" /></div>
+              <div><Label className="text-slate-300">Responsibilities</Label><Textarea className="bg-white/5 border-white/10 text-white" value={form.responsibilities || ''} onChange={e => update('responsibilities', e.target.value)} className="min-h-[100px]" /></div>
+              <div><Label className="text-slate-300">Requirements</Label><Textarea className="bg-white/5 border-white/10 text-white" value={form.requirements || ''} onChange={e => update('requirements', e.target.value)} className="min-h-[100px]" /></div>
+              <div><Label className="text-slate-300">Experience Required (years)</Label><Input className="bg-white/5 border-white/10 text-white" type="number" value={form.experience_required || ''} onChange={e => update('experience_required', Number(e.target.value))} /></div>
+              <div><Label className="text-slate-300">Certifications Required (if any)</Label><Input className="bg-white/5 border-white/10 text-white" value={form.certifications_required || ''} onChange={e => update('certifications_required', e.target.value)} placeholder="e.g., AWS Certified, PMP" /></div>
               <div>
-                <Label>Skills Required</Label>
+                <Label className="text-slate-300">Skills Required</Label>
                 <div className="flex gap-2 mt-1">
-                  <Input value={skillInput} onChange={e => setSkillInput(e.target.value)} placeholder="Add a skill" onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addSkill())} />
-                  <Button type="button" variant="outline" onClick={addSkill}>Add</Button>
+                  <Input className="bg-white/5 border-white/10 text-white" value={skillInput} onChange={e => setSkillInput(e.target.value)} placeholder="Add a skill" onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addSkill())} />
+                  <Button type="button" variant="outline" className="border-white/10 text-white hover:bg-white/10" onClick={addSkill}>Add</Button>
                 </div>
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {form.skills_required?.map(s => (
-                    <span key={s} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-700 text-xs font-medium">
+                    <span key={s} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-slate-300 text-xs font-medium">
                       {s}
-                      <button onClick={() => setForm(f => ({ ...f, skills_required: f.skills_required.filter(x => x !== s) }))} className="hover:text-indigo-900">×</button>
+                      <button onClick={() => setForm(f => ({ ...f, skills_required: f.skills_required.filter(x => x !== s) }))} className="hover:text-white transition-colors">×</button>
                     </span>
                   ))}
                 </div>
@@ -185,13 +185,13 @@ export default function PostJob() {
             </div>
           </Card>
 
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">Compensation</h2>
+          <Card className="p-6 bg-white/5 border-white/10 backdrop-blur-md">
+            <h2 className="text-lg font-semibold text-white mb-4">Compensation</h2>
             <div className="grid sm:grid-cols-2 gap-4">
-              <div><Label>Salary Min ($)</Label><Input type="number" value={form.salary_min || ''} onChange={e => update('salary_min', Number(e.target.value))} /></div>
-              <div><Label>Salary Max ($)</Label><Input type="number" value={form.salary_max || ''} onChange={e => update('salary_max', Number(e.target.value))} /></div>
-              <div className="sm:col-span-2"><Label>Benefits</Label><Textarea value={form.benefits || ''} onChange={e => update('benefits', e.target.value)} /></div>
-              <div><Label>Application Deadline</Label><Input type="date" value={form.application_deadline || ''} onChange={e => update('application_deadline', e.target.value)} /></div>
+              <div><Label className="text-slate-300">Salary Min ($)</Label><Input className="bg-white/5 border-white/10 text-white" type="number" value={form.salary_min || ''} onChange={e => update('salary_min', Number(e.target.value))} /></div>
+              <div><Label className="text-slate-300">Salary Max ($)</Label><Input className="bg-white/5 border-white/10 text-white" type="number" value={form.salary_max || ''} onChange={e => update('salary_max', Number(e.target.value))} /></div>
+              <div className="sm:col-span-2"><Label className="text-slate-300">Benefits</Label><Textarea className="bg-white/5 border-white/10 text-white" value={form.benefits || ''} onChange={e => update('benefits', e.target.value)} /></div>
+              <div><Label className="text-slate-300">Application Deadline</Label><Input className="bg-white/5 border-white/10 text-white" type="date" value={form.application_deadline || ''} onChange={e => update('application_deadline', e.target.value)} /></div>
             </div>
           </Card>
 

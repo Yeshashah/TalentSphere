@@ -78,11 +78,11 @@ export default function CompanyDashboard() {
   ];
 
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="flex h-screen bg-transparent">
       {/* Sidebar */}
-      <div className="w-60 flex-shrink-0 bg-white border-r flex flex-col">
+      <div className="w-60 flex-shrink-0 bg-black/20 backdrop-blur-xl border-r border-white/10 flex flex-col">
         {/* Company card */}
-        <div className="p-5 border-b flex flex-col items-center text-center">
+        <div className="p-5 border-b border-white/10 flex flex-col items-center text-center">
           {company?.logo_url ? (
             <img src={company.logo_url} alt="" className="w-14 h-14 rounded-2xl object-cover border-2 border-white shadow mb-2" />
           ) : (
@@ -90,36 +90,30 @@ export default function CompanyDashboard() {
               <Building2 className="w-7 h-7 text-indigo-400" />
             </div>
           )}
-          <p className="font-bold text-slate-900 text-sm">{company?.company_name || 'Your Company'}</p>
-          <p className="text-xs text-slate-500 mt-0.5">{company?.industry || 'No industry set'}</p>
+          <p className="font-bold text-white text-sm">{company?.company_name || 'Your Company'}</p>
+          <p className="text-xs text-slate-400 mt-0.5">{company?.industry || 'No industry set'}</p>
           {company?.subscription_plan === 'pro' && (
-            <Badge className="mt-2 bg-indigo-50 text-indigo-700 border-indigo-200 text-xs">Pro Plan</Badge>
+            <Badge variant="default" className="mt-2 bg-indigo-50 text-indigo-700 border-indigo-200 text-xs">Pro Plan</Badge>
           )}
         </div>
 
         {/* Nav */}
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           {SIDEBAR_LINKS.map(item => {
-            if (item.href) {
-              return (
-                <Link key={item.key} to={item.href}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
-                  <item.icon className="w-4 h-4 flex-shrink-0" />
-                  {item.label}
-                  {item.key === 'messages' && messages.length > 0 && (
-                    <Badge className="ml-auto text-xs bg-indigo-500">{messages.length}</Badge>
-                  )}
-                </Link>
-              );
-            }
+            const isLink = !!item.href;
+            const Component = isLink ? Link : 'button';
+            const props = isLink ? { to: item.href } : { onClick: () => setActiveTab(item.key) };
+
             return (
-              <button key={item.key} onClick={() => setActiveTab(item.key)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                  activeTab === item.key ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                }`}>
+              <Component
+                key={item.key}
+                {...props}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${activeTab === item.key ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                  }`}
+              >
                 <item.icon className="w-4 h-4 flex-shrink-0" />
                 {item.label}
-              </button>
+              </Component>
             );
           })}
         </nav>
@@ -131,8 +125,8 @@ export default function CompanyDashboard() {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">{company?.company_name || 'Company Dashboard'}</h1>
-              <p className="text-sm text-slate-500 mt-0.5">Manage your jobs and candidates</p>
+              <h1 className="text-2xl font-bold text-white">{company?.company_name || 'Company Dashboard'}</h1>
+              <p className="text-sm text-slate-400 mt-0.5">Manage your jobs and candidates</p>
             </div>
             <div className="flex gap-2">
               <Link to="/Candidates">
@@ -176,12 +170,12 @@ export default function CompanyDashboard() {
           {/* Stats grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {stats.map(s => (
-              <Card key={s.label} className="p-4">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${s.color}`}>
+              <Card key={s.label} className="p-4 bg-white/5 border-white/10 backdrop-blur-md">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${s.color} bg-opacity-10`}>
                   <s.icon className="w-5 h-5" />
                 </div>
-                <p className="text-2xl font-bold text-slate-900">{s.value}</p>
-                <p className="text-xs text-slate-500 mt-0.5">{s.label}</p>
+                <p className="text-2xl font-bold text-white">{s.value}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{s.label}</p>
               </Card>
             ))}
           </div>
@@ -189,22 +183,22 @@ export default function CompanyDashboard() {
           {/* Recent Applications */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold text-slate-900">Recent Applications</h2>
-              <Link to="/ManageJobs"><Button variant="ghost" size="sm" className="gap-1 text-indigo-600">Manage All <ArrowRight className="w-4 h-4" /></Button></Link>
+              <h2 className="text-base font-semibold text-white">Recent Applications</h2>
+              <Link to="/ManageJobs"><Button variant="ghost" size="sm" className="gap-1 text-indigo-400 hover:text-indigo-300">Manage All <ArrowRight className="w-4 h-4" /></Button></Link>
             </div>
             {applications.length === 0 ? (
-              <Card className="p-8 text-center">
-                <FileText className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-                <p className="text-sm text-slate-500">No applications yet. Post a job to get started!</p>
-                <Link to="/PostJob"><Button size="sm" className="mt-3 bg-indigo-600 hover:bg-indigo-700">Post a Job</Button></Link>
+              <Card className="p-8 text-center bg-white/5 border-white/10 backdrop-blur-md">
+                <FileText className="w-10 h-10 text-slate-500 mx-auto mb-2" />
+                <p className="text-sm text-slate-400">No applications yet. Post a job to get started!</p>
+                <Link to="/PostJob"><Button size="sm" className="mt-3 bg-indigo-600 hover:bg-indigo-500">Post a Job</Button></Link>
               </Card>
             ) : (
-              <Card className="overflow-hidden">
+              <Card className="overflow-hidden bg-white/5 border-white/10 backdrop-blur-md">
                 {applications.slice(0, 6).map((app, i) => (
-                  <div key={app.id} className={`flex items-center justify-between px-4 py-3 ${i < Math.min(applications.length, 6) - 1 ? 'border-b' : ''}`}>
+                  <div key={app.id} className={`flex items-center justify-between px-4 py-3 ${i < Math.min(applications.length, 6) - 1 ? 'border-b border-white/5' : ''}`}>
                     <div>
-                      <p className="font-medium text-slate-900 text-sm">{app.candidate_name}</p>
-                      <p className="text-xs text-slate-400">Applied to {app.job_title}</p>
+                      <p className="font-medium text-white text-sm">{app.candidate_name}</p>
+                      <p className="text-xs text-slate-500">Applied to {app.job_title}</p>
                     </div>
                     <StatusBadge status={app.status} />
                   </div>
@@ -216,21 +210,21 @@ export default function CompanyDashboard() {
           {/* Your Jobs */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold text-slate-900">Your Jobs</h2>
-              <Link to="/PostJob"><Button variant="ghost" size="sm" className="gap-1 text-indigo-600">Post New <Plus className="w-4 h-4" /></Button></Link>
+              <h2 className="text-base font-semibold text-white">Your Jobs</h2>
+              <Link to="/PostJob"><Button variant="ghost" size="sm" className="gap-1 text-indigo-400 hover:text-indigo-300">Post New <Plus className="w-4 h-4" /></Button></Link>
             </div>
             {jobs.length === 0 ? (
-              <Card className="p-8 text-center">
-                <Briefcase className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-                <p className="text-sm text-slate-500">No jobs posted yet.</p>
+              <Card className="p-8 text-center bg-white/5 border-white/10 backdrop-blur-md">
+                <Briefcase className="w-10 h-10 text-slate-500 mx-auto mb-2" />
+                <p className="text-sm text-slate-400">No jobs posted yet.</p>
               </Card>
             ) : (
-              <Card className="overflow-hidden">
+              <Card className="overflow-hidden bg-white/5 border-white/10 backdrop-blur-md">
                 {jobs.slice(0, 5).map((job, i) => (
-                  <div key={job.id} className={`flex items-center justify-between px-4 py-3 ${i < Math.min(jobs.length, 5) - 1 ? 'border-b' : ''}`}>
+                  <div key={job.id} className={`flex items-center justify-between px-4 py-3 ${i < Math.min(jobs.length, 5) - 1 ? 'border-b border-white/5' : ''}`}>
                     <div>
-                      <p className="font-medium text-slate-900 text-sm">{job.title}</p>
-                      <p className="text-xs text-slate-400">{applications.filter(a => a.job_id === job.id).length} applications</p>
+                      <p className="font-medium text-white text-sm">{job.title}</p>
+                      <p className="text-xs text-slate-500">{applications.filter(a => a.job_id === job.id).length} applications</p>
                     </div>
                     <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${approvalColors[job.approval_status || 'pending']}`}>
                       {job.approval_status || 'pending'}
@@ -245,18 +239,18 @@ export default function CompanyDashboard() {
           {savedCandidates.length > 0 && (
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base font-semibold text-slate-900">Saved Candidates</h2>
-                <Link to="/SavedCandidates"><Button variant="ghost" size="sm" className="gap-1 text-indigo-600">View All <ArrowRight className="w-4 h-4" /></Button></Link>
+                <h2 className="text-base font-semibold text-white">Saved Candidates</h2>
+                <Link to="/SavedCandidates"><Button variant="ghost" size="sm" className="gap-1 text-indigo-400 hover:text-indigo-300">View All <ArrowRight className="w-4 h-4" /></Button></Link>
               </div>
-              <Card className="overflow-hidden">
+              <Card className="overflow-hidden bg-white/5 border-white/10 backdrop-blur-md">
                 {savedCandidates.slice(0, 4).map((item, i) => (
                   <Link key={item.id} to={`/CandidateDetail?id=${item.item_id}`}
-                    className={`flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors ${i < Math.min(savedCandidates.length, 4) - 1 ? 'border-b' : ''}`}>
+                    className={`flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors ${i < Math.min(savedCandidates.length, 4) - 1 ? 'border-b border-white/5' : ''}`}>
                     <div>
-                      <p className="font-medium text-slate-900 text-sm">{item.item_title}</p>
-                      <p className="text-xs text-slate-400">{item.item_subtitle}</p>
+                      <p className="font-medium text-white text-sm">{item.item_title}</p>
+                      <p className="text-xs text-slate-500">{item.item_subtitle}</p>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-slate-400" />
+                    <ArrowRight className="w-4 h-4 text-slate-500" />
                   </Link>
                 ))}
               </Card>

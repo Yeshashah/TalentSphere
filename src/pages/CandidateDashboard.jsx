@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import {
   Briefcase, FileText, Bookmark, MessageSquare, User, Edit, ArrowRight,
-  LayoutDashboard, Search, ClipboardList, CheckSquare
+  LayoutDashboard, Search, ClipboardList, CheckSquare, FileCheck
 } from 'lucide-react';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
 import StatusBadge from '../components/shared/StatusBadge';
@@ -42,6 +42,24 @@ function calcProfileCompleteness(profile) {
   return Math.round((filled.length / fields.length) * 100);
 }
 
+function calcResumeScore(profile) {
+  if (!profile) return { score: 0, breakdown: [] };
+
+  const checks = [
+    { label: 'Name & Contact',     weight: 15, pass: !!(profile.candidate_name || profile.full_name) && !!(profile.candidate_phone || profile.phone) },
+    { label: 'Job Title',          weight: 10, pass: !!(profile.candidate_job_title || profile.job_title) },
+    { label: 'Skills listed',      weight: 20, pass: (() => { const s = profile.candidate_skills || profile.skills; return Array.isArray(s) ? s.length > 0 : (typeof s === 'string' && s.trim().length > 0); })() },
+    { label: 'Experience',         weight: 15, pass: Number(profile.candidate_years_of_experience || profile.years_of_experience || 0) > 0 },
+    { label: 'Education',          weight: 10, pass: !!(profile.candidate_educational_degree || profile.education_degree) },
+    { label: 'LinkedIn profile',   weight: 10, pass: !!(profile.candidate_linkedin || profile.linkedin) },
+    { label: 'Portfolio / GitHub', weight: 10, pass: !!(profile.candidate_portfolio_link || profile.portfolio_link) },
+    { label: 'Resume uploaded',    weight: 10, pass: !!(profile.candidate_resume || profile.resume_url) },
+  ];
+
+  const score = checks.reduce((sum, c) => sum + (c.pass ? c.weight : 0), 0);
+  return { score, breakdown: checks };
+}
+
 export default function CandidateDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
 
@@ -74,20 +92,25 @@ export default function CandidateDashboard() {
   if (isLoading) return <LoadingSpinner />;
 
   const completion = calcProfileCompleteness(profile);
+  const { score: resumeScore, breakdown: resumeBreakdown } = calcResumeScore(profile);
+
+  const scoreColor = resumeScore >= 80 ? 'text-emerald-400' : resumeScore >= 50 ? 'text-amber-400' : 'text-red-400';
+  const scoreRingColor = resumeScore >= 80 ? '#34d399' : resumeScore >= 50 ? '#fbbf24' : '#f87171';
 
   const stats = [
-    { icon: FileText, label: 'Total Applications', value: applications.length, color: 'bg-blue-50 text-blue-600' },
-    { icon: Bookmark, label: 'Saved Jobs', value: savedJobs.length, color: 'bg-amber-50 text-amber-600' },
-    { icon: MessageSquare, label: 'Messages', value: messages.length, color: 'bg-emerald-50 text-emerald-600' },
-    { icon: User, label: 'Profile Completion', value: `${completion}%`, color: 'bg-indigo-50 text-indigo-600' },
+    { icon: FileText,  label: 'Total Applications', value: applications.length, color: 'bg-blue-50 text-blue-600' },
+    { icon: Bookmark,  label: 'Saved Jobs',          value: savedJobs.length,   color: 'bg-amber-50 text-amber-600' },
+    { icon: MessageSquare, label: 'Messages',        value: messages.length,    color: 'bg-emerald-50 text-emerald-600' },
+    { icon: User,      label: 'Profile Completion',  value: `${completion}%`,   color: 'bg-indigo-50 text-indigo-600' },
+    { icon: FileCheck, label: 'Resume Score',        value: `${resumeScore}/100`, color: resumeScore >= 80 ? 'bg-emerald-50 text-emerald-600' : resumeScore >= 50 ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-500' },
   ];
 
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="flex h-screen bg-transparent">
       {/* Sidebar */}
-      <div className="w-60 flex-shrink-0 bg-white border-r flex flex-col">
+      <div className="w-60 flex-shrink-0 bg-black/20 backdrop-blur-xl border-r border-white/10 flex flex-col">
         {/* Avatar */}
-        <div className="p-5 border-b flex flex-col items-center text-center">
+        <div className="p-5 border-b border-white/10 flex flex-col items-center text-center">
           {profile?.avatar_url ? (
             <img src={profile.avatar_url} alt="" className="w-14 h-14 rounded-2xl object-cover border-2 border-white shadow mb-2" />
           ) : (
@@ -95,10 +118,10 @@ export default function CandidateDashboard() {
               <User className="w-7 h-7 text-indigo-500" />
             </div>
           )}
-          <p className="font-bold text-slate-900 text-sm">{profile?.full_name || user?.full_name || 'Your Name'}</p>
-          <p className="text-xs text-slate-500 mt-0.5">{profile?.job_title || 'No title set'}</p>
+          <p className="font-bold text-white text-sm">{profile?.full_name || user?.full_name || 'Your Name'}</p>
+          <p className="text-xs text-slate-400 mt-0.5">{profile?.job_title || 'No title set'}</p>
           {profile?.open_to_work && (
-            <Badge className="mt-2 bg-green-50 text-green-700 border-green-200 text-xs">Open to Work</Badge>
+            <Badge variant="default" className="mt-2 bg-green-50 text-green-700 border-green-200 text-xs">Open to Work</Badge>
           )}
           {/* Completion bar */}
           <div className="w-full mt-3">
@@ -111,29 +134,22 @@ export default function CandidateDashboard() {
           </div>
         </div>
 
-        {/* Nav */}
         <nav className="flex-1 p-3 space-y-1">
           {SIDEBAR_LINKS.map(item => {
-            if (item.href) {
-              return (
-                <Link key={item.key} to={item.href}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
-                  <item.icon className="w-4 h-4 flex-shrink-0" />
-                  {item.label}
-                  {item.key === 'messages' && messages.length > 0 && (
-                    <Badge className="ml-auto text-xs bg-indigo-500">{messages.length}</Badge>
-                  )}
-                </Link>
-              );
-            }
+            const isLink = !!item.href;
+            const Component = isLink ? Link : 'button';
+            const props = isLink ? { to: item.href } : { onClick: () => setActiveTab(item.key) };
+
             return (
-              <button key={item.key} onClick={() => setActiveTab(item.key)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                  activeTab === item.key ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                }`}>
+              <Component
+                key={item.key}
+                {...props}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${activeTab === item.key ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                  }`}
+              >
                 <item.icon className="w-4 h-4 flex-shrink-0" />
                 {item.label}
-              </button>
+              </Component>
             );
           })}
         </nav>
@@ -145,8 +161,8 @@ export default function CandidateDashboard() {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">Welcome back, {profile?.full_name?.split(' ')[0] || user?.full_name?.split(' ')[0] || 'there'}!</h1>
-              <p className="text-sm text-slate-500 mt-0.5">Here's your job search overview</p>
+              <h1 className="text-2xl font-bold text-white">Welcome back, {profile?.full_name?.split(' ')[0] || user?.full_name?.split(' ')[0] || 'there'}!</h1>
+              <p className="text-sm text-slate-400 mt-0.5">Here's your job search overview</p>
             </div>
             <div className="flex gap-2">
               <Link to="/Jobs">
@@ -172,40 +188,80 @@ export default function CandidateDashboard() {
           )}
 
           {/* Stats grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
             {stats.map(s => (
-              <Card key={s.label} className="p-4">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${s.color}`}>
+              <Card key={s.label} className="p-4 bg-white/5 border-white/10 backdrop-blur-md">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${s.color} bg-opacity-10`}>
                   <s.icon className="w-5 h-5" />
                 </div>
-                <p className="text-2xl font-bold text-slate-900">{s.value}</p>
-                <p className="text-xs text-slate-500 mt-0.5">{s.label}</p>
+                <p className="text-2xl font-bold text-white">{s.value}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{s.label}</p>
               </Card>
             ))}
           </div>
 
+          {/* Resume Score Panel */}
+          <Card className="mb-8 p-5 bg-white/5 border-white/10 backdrop-blur-md">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <FileCheck className="w-5 h-5 text-indigo-400" />
+                <h2 className="text-base font-semibold text-white">Resume Score</h2>
+              </div>
+              <span className={`text-2xl font-bold ${scoreColor}`}>{resumeScore}<span className="text-sm font-medium text-slate-500">/100</span></span>
+            </div>
+
+            {/* Score bar */}
+            <div className="h-2.5 bg-white/10 rounded-full overflow-hidden mb-5">
+              <div
+                className="h-full rounded-full transition-all duration-700"
+                style={{ width: `${resumeScore}%`, backgroundColor: scoreRingColor }}
+              />
+            </div>
+
+            {/* Breakdown checklist */}
+            <div className="grid sm:grid-cols-2 gap-2">
+              {resumeBreakdown.map(item => (
+                <div key={item.label} className="flex items-center gap-2.5">
+                  <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                    item.pass ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/5 text-slate-500'
+                  }`}>
+                    {item.pass ? '✓' : '·'}
+                  </span>
+                  <span className={`text-sm ${item.pass ? 'text-slate-300' : 'text-slate-500'}`}>{item.label}</span>
+                  <span className="ml-auto text-xs text-slate-600">+{item.weight}</span>
+                </div>
+              ))}
+            </div>
+
+            {resumeScore < 80 && (
+              <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
+                <p className="text-xs text-slate-400">Complete your profile to boost your resume score.</p>
+                <a href="/EditCandidateProfile" className="text-xs text-indigo-400 hover:underline font-medium">Improve now →</a>
+              </div>
+            )}
+          </Card>
+
           {/* Recent Applications */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold text-slate-900">Recent Applications</h2>
-              <Link to="/Jobs"><Button variant="ghost" size="sm" className="gap-1 text-indigo-600">Browse Jobs <ArrowRight className="w-4 h-4" /></Button></Link>
+              <h2 className="text-base font-semibold text-white">Recent Applications</h2>
             </div>
             {applications.length === 0 ? (
-              <Card className="p-8 text-center">
-                <Briefcase className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-                <p className="text-sm text-slate-500">No applications yet.</p>
+              <Card className="p-8 text-center bg-white/5 border-white/10 backdrop-blur-md">
+                <Briefcase className="w-10 h-10 text-slate-500 mx-auto mb-2" />
+                <p className="text-sm text-slate-400">No applications yet.</p>
                 <Link to="/Jobs"><Button size="sm" className="mt-3 bg-indigo-600 hover:bg-indigo-700">Start Applying</Button></Link>
               </Card>
             ) : (
-              <Card className="overflow-hidden">
+              <Card className="overflow-hidden bg-white/5 border-white/10 backdrop-blur-md">
                 {applications.slice(0, 6).map((app, i) => (
-                  <Link key={app.id} to={`/Jobs?tab=applied&jobId=${app.job_id}`} className={`block hover:bg-slate-50 transition-colors ${i < Math.min(applications.length, 6) - 1 ? 'border-b' : ''}`}>
+                  <Link key={app.id} to={`/Jobs?tab=applied&jobId=${app.job_id}`} className={`block hover:bg-white/5 transition-colors ${i < Math.min(applications.length, 6) - 1 ? 'border-b border-white/5' : ''}`}>
                     <div className="flex items-center justify-between px-4 py-3">
                       <div>
-                        <p className="font-medium text-slate-900 text-sm">{app.job_title}</p>
-                        <p className="text-xs text-slate-400">{app.company_name}</p>
+                        <p className="font-medium text-white text-sm">{app.job_title}</p>
+                        <p className="text-xs text-slate-500">{app.company_name}</p>
                       </div>
-                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusColors[app.status] || 'bg-slate-100 text-slate-600'}`}>
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusColors[app.status] || 'bg-white/10 text-slate-400'}`}>
                         {app.status}
                       </span>
                     </div>
@@ -218,24 +274,23 @@ export default function CandidateDashboard() {
           {/* Saved Jobs */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold text-slate-900">Saved Jobs</h2>
-              <Link to="/Jobs"><Button variant="ghost" size="sm" className="gap-1 text-indigo-600">View All <ArrowRight className="w-4 h-4" /></Button></Link>
+              <h2 className="text-base font-semibold text-white">Saved Jobs</h2>
             </div>
             {savedJobs.length === 0 ? (
-              <Card className="p-8 text-center">
-                <Bookmark className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-                <p className="text-sm text-slate-500">No saved jobs yet.</p>
+              <Card className="p-8 text-center bg-white/5 border-white/10 backdrop-blur-md">
+                <Bookmark className="w-10 h-10 text-slate-500 mx-auto mb-2" />
+                <p className="text-sm text-slate-400">No saved jobs yet.</p>
               </Card>
             ) : (
-              <Card className="overflow-hidden">
+              <Card className="overflow-hidden bg-white/5 border-white/10 backdrop-blur-md">
                 {savedJobs.slice(0, 5).map((item, i) => (
                   <Link key={item.id} to={`/Jobs?tab=saved&jobId=${item.item_id}`}
-                    className={`flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors ${i < Math.min(savedJobs.length, 5) - 1 ? 'border-b' : ''}`}>
+                    className={`flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors ${i < Math.min(savedJobs.length, 5) - 1 ? 'border-b border-white/5' : ''}`}>
                     <div>
-                      <p className="font-medium text-slate-900 text-sm">{item.item_title}</p>
-                      <p className="text-xs text-slate-400">{item.item_subtitle}</p>
+                      <p className="font-medium text-white text-sm">{item.item_title}</p>
+                      <p className="text-xs text-slate-500">{item.item_subtitle}</p>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-slate-400" />
+                    <ArrowRight className="w-4 h-4 text-slate-500" />
                   </Link>
                 ))}
               </Card>
@@ -245,4 +300,4 @@ export default function CandidateDashboard() {
       </div>
     </div>
   );
-}
+}

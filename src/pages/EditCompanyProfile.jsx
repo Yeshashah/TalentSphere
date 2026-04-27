@@ -62,21 +62,21 @@ export default function EditCompanyProfile() {
   if (isLoading) return <LoadingSpinner />;
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8">
+    <div className="min-h-screen bg-transparent py-8">
       <div className="max-w-2xl mx-auto px-4 sm:px-6">
-        <h1 className="text-2xl font-bold text-slate-900 mb-6">Company Profile</h1>
+        <h1 className="text-2xl font-bold text-white mb-6">Company Profile</h1>
 
         <div className="space-y-6">
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">Company Info</h2>
+          <Card className="p-6 bg-white/5 border-white/10 backdrop-blur-md">
+            <h2 className="text-lg font-semibold text-white mb-4">Company Info</h2>
             <div className="grid sm:grid-cols-2 gap-4">
-              <div><Label>Company Name</Label><Input value={form.company_name || ''} onChange={e => update('company_name', e.target.value)} /></div>
-              <div><Label>Industry</Label><Input value={form.industry || ''} onChange={e => update('industry', e.target.value)} /></div>
+              <div><Label className="text-slate-300">Company Name</Label><Input className="bg-white/5 border-white/10 text-white" value={form.company_name || ''} onChange={e => update('company_name', e.target.value)} /></div>
+              <div><Label className="text-slate-300">Industry</Label><Input className="bg-white/5 border-white/10 text-white" value={form.industry || ''} onChange={e => update('industry', e.target.value)} /></div>
               <div>
-                <Label>Company Size</Label>
+                <Label className="text-slate-300">Company Size</Label>
                 <Select value={form.company_size || ''} onValueChange={v => update('company_size', v)}>
-                  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                  <SelectContent>
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue placeholder="Select..." /></SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-white/10 text-white">
                     <SelectItem value="1-10">1-10</SelectItem>
                     <SelectItem value="11-50">11-50</SelectItem>
                     <SelectItem value="51-200">51-200</SelectItem>
@@ -86,28 +86,28 @@ export default function EditCompanyProfile() {
                   </SelectContent>
                 </Select>
               </div>
-              <div><Label>Website</Label><Input value={form.website || ''} onChange={e => update('website', e.target.value)} placeholder="https://..." /></div>
-              <div className="sm:col-span-2"><Label>Headquarters</Label><Input value={form.headquarters || ''} onChange={e => update('headquarters', e.target.value)} /></div>
-              <div className="sm:col-span-2"><Label>Description</Label><Textarea value={form.description || ''} onChange={e => update('description', e.target.value)} /></div>
+              <div><Label className="text-slate-300">Website</Label><Input className="bg-white/5 border-white/10 text-white" value={form.website || ''} onChange={e => update('website', e.target.value)} placeholder="https://..." /></div>
+              <div className="sm:col-span-2"><Label className="text-slate-300">Headquarters</Label><Input className="bg-white/5 border-white/10 text-white" value={form.headquarters || ''} onChange={e => update('headquarters', e.target.value)} /></div>
+              <div className="sm:col-span-2"><Label className="text-slate-300">Description</Label><Textarea className="bg-white/5 border-white/10 text-white" value={form.description || ''} onChange={e => update('description', e.target.value)} /></div>
               <div>
-                <Label>Logo</Label>
+                <Label className="text-slate-300">Logo</Label>
                 <div className="flex items-center gap-3 mt-1">
-                  {form.logo_url && <img src={form.logo_url} alt="" className="w-12 h-12 rounded-xl object-cover border" />}
+                  {form.logo_url && <img src={form.logo_url} alt="" className="w-12 h-12 rounded-xl object-cover border border-white/10" />}
                   <label className="cursor-pointer">
                     <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
-                    <Button variant="outline" size="sm" className="gap-2" asChild><span><Upload className="w-4 h-4" /> Upload</span></Button>
+                    <Button variant="outline" size="sm" className="gap-2 border-white/10 text-white hover:bg-white/10" asChild><span><Upload className="w-4 h-4" /> Upload</span></Button>
                   </label>
                 </div>
               </div>
             </div>
           </Card>
 
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">Recruiter Info</h2>
+          <Card className="p-6 bg-white/5 border-white/10 backdrop-blur-md">
+            <h2 className="text-lg font-semibold text-white mb-4">Recruiter Info</h2>
             <div className="grid sm:grid-cols-2 gap-4">
-              <div><Label>Recruiter Name</Label><Input value={form.recruiter_name || ''} onChange={e => update('recruiter_name', e.target.value)} /></div>
-              <div><Label>Recruiter Email</Label><Input value={form.recruiter_email || ''} onChange={e => update('recruiter_email', e.target.value)} /></div>
-              <div><Label>Recruiter Role</Label><Input value={form.recruiter_role || ''} onChange={e => update('recruiter_role', e.target.value)} placeholder="e.g., Head of Talent" /></div>
+              <div><Label className="text-slate-300">Recruiter Name</Label><Input className="bg-white/5 border-white/10 text-white" value={form.recruiter_name || ''} onChange={e => update('recruiter_name', e.target.value)} /></div>
+              <div><Label className="text-slate-300">Recruiter Email</Label><Input className="bg-white/5 border-white/10 text-white" value={form.recruiter_email || ''} onChange={e => update('recruiter_email', e.target.value)} /></div>
+              <div><Label className="text-slate-300">Recruiter Role</Label><Input className="bg-white/5 border-white/10 text-white" value={form.recruiter_role || ''} onChange={e => update('recruiter_role', e.target.value)} placeholder="e.g., Head of Talent" /></div>
             </div>
           </Card>
 

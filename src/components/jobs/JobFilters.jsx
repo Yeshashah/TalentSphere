@@ -27,8 +27,8 @@ const companySizes = ['1-10', '11-50', '51-200', '201-500', '501-1000', '1000+']
 
 function FilterSection({ title, children }) {
   return (
-    <div className="border-b pb-4 mb-4">
-      <p className="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">{title}</p>
+    <div className="border-b border-white/5 pb-4 mb-4">
+      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{title}</p>
       {children}
     </div>
   );
@@ -46,9 +46,9 @@ function CheckGroup({ options, selected, onToggle, labelKey = 'label', valueKey 
               type="checkbox"
               checked={selected.includes(val)}
               onChange={() => onToggle(val)}
-              className="rounded border-slate-300 accent-indigo-600"
+              className="rounded border-white/20 bg-white/5 accent-indigo-500"
             />
-            <span className="text-xs text-slate-600 group-hover:text-slate-900">{label}</span>
+            <span className="text-xs text-slate-400 group-hover:text-slate-200">{label}</span>
           </label>
         );
       })}
@@ -67,11 +67,11 @@ export default function JobFilters({ filters, onChange }) {
   const hasFilters = Object.values(filters).some(v => Array.isArray(v) ? v.length > 0 : !!v);
 
   return (
-    <div className="w-52 flex-shrink-0 border-r bg-white overflow-y-auto p-4">
+    <div className="w-52 flex-shrink-0 border-r border-white/10 bg-black/20 backdrop-blur-xl overflow-y-auto p-4">
       <div className="flex items-center justify-between mb-4">
-        <p className="font-semibold text-slate-800 text-sm">Filters</p>
+        <p className="font-semibold text-white text-sm">Filters</p>
         {hasFilters && (
-          <button onClick={() => onChange({})} className="text-xs text-indigo-600 hover:underline flex items-center gap-1">
+          <button onClick={() => onChange({})} className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
             <X className="w-3 h-3" /> Clear
           </button>
         )}
@@ -86,9 +86,9 @@ export default function JobFilters({ filters, onChange }) {
                 name="postedDate"
                 checked={filters.postedDate === p.value}
                 onChange={() => set('postedDate', filters.postedDate === p.value ? '' : p.value)}
-                className="accent-indigo-600"
+                className="accent-indigo-500"
               />
-              <span className="text-xs text-slate-600 group-hover:text-slate-900">{p.label}</span>
+              <span className="text-xs text-slate-400 group-hover:text-white transition-colors">{p.label}</span>
             </label>
           ))}
         </div>
@@ -115,9 +115,9 @@ export default function JobFilters({ filters, onChange }) {
                 name="salaryRange"
                 checked={filters.salaryLabel === r.label}
                 onChange={() => set('salaryLabel', filters.salaryLabel === r.label ? '' : r.label)}
-                className="accent-indigo-600"
+                className="accent-indigo-500"
               />
-              <span className="text-xs text-slate-600 group-hover:text-slate-900">{r.label}</span>
+              <span className="text-xs text-slate-400 group-hover:text-white transition-colors">{r.label}</span>
             </label>
           ))}
         </div>
@@ -137,7 +137,7 @@ export default function JobFilters({ filters, onChange }) {
           placeholder="e.g. New York, Remote"
           value={filters.location || ''}
           onChange={e => set('location', e.target.value)}
-          className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+          className="w-full text-xs bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         />
       </FilterSection>
 
@@ -147,7 +147,7 @@ export default function JobFilters({ filters, onChange }) {
           placeholder="e.g. React, Python"
           value={filters.skills || ''}
           onChange={e => set('skills', e.target.value)}
-          className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+          className="w-full text-xs bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         />
       </FilterSection>
     </div>

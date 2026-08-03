@@ -1,0 +1,30 @@
+{
+  "name": "SavedItem",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "item_type": {
+      "type": "string",
+      "enum": [
+        "candidate",
+        "job"
+      ]
+    },
+    "item_id": {
+      "type": "string"
+    },
+    "item_title": {
+      "type": "string"
+    },
+    "item_subtitle": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_email",
+    "item_type",
+    "item_id"
+  ]
+}

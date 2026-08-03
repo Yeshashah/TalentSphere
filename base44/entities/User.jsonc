@@ -1,0 +1,20 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "candidate",
+        "company"
+      ],
+      "default": "candidate"
+    },
+    "user_type_setup_complete": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": []
+}

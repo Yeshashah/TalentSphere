@@ -1,0 +1,68 @@
+{
+  "name": "CompanyProfile",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email of the company/recruiter user"
+    },
+    "company_name": {
+      "type": "string"
+    },
+    "industry": {
+      "type": "string"
+    },
+    "company_size": {
+      "type": "string",
+      "enum": [
+        "1-10",
+        "11-50",
+        "51-200",
+        "201-500",
+        "501-1000",
+        "1000+"
+      ]
+    },
+    "website": {
+      "type": "string"
+    },
+    "headquarters": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "logo_url": {
+      "type": "string"
+    },
+    "recruiter_name": {
+      "type": "string"
+    },
+    "recruiter_email": {
+      "type": "string"
+    },
+    "recruiter_role": {
+      "type": "string"
+    },
+    "subscription_plan": {
+      "type": "string",
+      "enum": [
+        "free",
+        "pro"
+      ],
+      "default": "free"
+    },
+    "candidate_views_used": {
+      "type": "number",
+      "default": 0
+    },
+    "jobs_posted_count": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "user_email",
+    "company_name"
+  ]
+}

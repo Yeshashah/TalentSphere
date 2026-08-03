@@ -1,0 +1,52 @@
+{
+  "name": "Application",
+  "type": "object",
+  "properties": {
+    "job_id": {
+      "type": "string"
+    },
+    "job_title": {
+      "type": "string"
+    },
+    "company_name": {
+      "type": "string"
+    },
+    "company_email": {
+      "type": "string"
+    },
+    "candidate_email": {
+      "type": "string"
+    },
+    "candidate_name": {
+      "type": "string"
+    },
+    "resume_url": {
+      "type": "string"
+    },
+    "cover_letter": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "applied",
+        "screening",
+        "interview",
+        "offer",
+        "rejected",
+        "hired"
+      ],
+      "default": "applied"
+    },
+    "match_score": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "job_id",
+    "candidate_email"
+  ]
+}
